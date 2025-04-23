@@ -8,7 +8,10 @@ RUN apt-get update && apt-get install -y \
     libicu-dev \
     libzip-dev \
     libpq-dev \
-    && docker-php-ext-install pdo_mysql intl zip
+    default-mysql-client \
+    && docker-php-ext-install pdo_mysql intl zip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Laravelの依存をインストール
 COPY composer.json composer.lock ./
