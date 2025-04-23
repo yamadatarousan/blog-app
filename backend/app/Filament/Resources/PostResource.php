@@ -18,6 +18,14 @@ class PostResource extends Resource
             ->schema([
                 Forms\Components\TextInput::make('title')->required(),
                 Forms\Components\Textarea::make('content')->required(),
+                Forms\Components\TextInput::make('image')->label('Image URL'),
+                Forms\Components\Select::make('category')
+                    ->options([
+                        'General' => 'General',
+                        'Tech' => 'Tech',
+                        'Lifestyle' => 'Lifestyle',
+                    ])
+                    ->default('General'),
             ]);
     }
 
@@ -27,6 +35,8 @@ class PostResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('title'),
                 Tables\Columns\TextColumn::make('content')->limit(50),
+                Tables\Columns\TextColumn::make('category'),
+                Tables\Columns\ImageColumn::make('image'),                
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
