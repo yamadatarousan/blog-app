@@ -8,8 +8,9 @@ RUN apt-get update && apt-get install -y \
     libicu-dev \
     libzip-dev \
     libpq-dev \
+    vim \
     default-mysql-client \
-    && docker-php-ext-install pdo_mysql intl zip vim \
+    && docker-php-ext-install pdo_mysql intl zip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
