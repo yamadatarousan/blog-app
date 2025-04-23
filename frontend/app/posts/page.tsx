@@ -7,13 +7,17 @@ type Post = {
     created_at: string;
   };
   
-  export default async function Posts() {
+  export default async function Posts({ searchParams }: { searchParams: { page?: string } }) {
+    const page = parseInt(searchParams.page || '1', 10);
+    const perPage = 6;
     try {
-      const res = await fetch('http://127.0.0.1/api/posts', { cache: 'no-store' });
+      const res = await fetch(`http://127.0.0.1/api/posts?page=${page}&per_page=${perPage}`, {
+        cache: 'no-store',
+      });
       if (!res.ok) {
         throw new Error(`API error: ${res.status} ${res.statusText}`);
       }
-      const posts: Post[] = await res.json();
+      const { data: posts, last_page }: { data: Post[]; last_page: number } = await res.json();
   
       return (
         <div className="container mx-auto p-6">
@@ -55,6 +59,24 @@ type Post = {
                 </div>
               </a>
             ))}
+          </div>
+          <div className="flex justify-center mt-8 space-x-4">
+            {page > 1 && (
+              <a
+                href={`/posts?page=${page - 1}`}
+                className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-opacity-80"
+              >
+                Previous
+              </a>
+            )}
+            {page < last_page && (
+              <a
+                href={`/posts?page=${page + 1}`}
+                className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-opacity-80"
+              >
+                Next
+              </a>
+            )}
           </div>
         </div>
       );
