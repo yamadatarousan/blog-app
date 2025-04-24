@@ -14,7 +14,23 @@
 ## データベース
 - MySQL
 
+## Webサーバ
+- nginx
+
 ## memo
+## 開発環境の構築
+- composerでlaravelインストール
+```
+composer create-project laravel/laravel backend
+```
+- NextJSのインストール
+```
+npx create-next-app@latest
+```
+- docker-compose.ymlを使ってコンテナをビルド
+```
+docker-compose up -d
+```
 ### 構成について
 - バックエンドのDBにフロントエンドの表示用データを投入するのはFilamentの管理画面の役割
 - DBに保存されているデータをlaravelのREST APIがフロントエンドに提供する
