@@ -15,14 +15,11 @@
 - MySQL
 
 ## memo
+### tailwindについて
 - tailwindは3.4.14、4系だとinitの際にエラーが出る
-- php,laravelの設定の際にDockerコンテナ内で作業が必要
 
+### コンテナ内作業例
 ```
-apt-get update
-apt-get install -y libpq-dev
-docker-php-ext-install pdo_mysql
-php -m | grep pdo_mysql
+docker-compose exec laravel bash
+mysql -u root -p -h mysql -P 3306
 ```
-
-- これでphp.iniにpdo_mysqlをロードさせる記述を追記
