@@ -7,7 +7,7 @@
 - tailwindcss
 
 ## バックエンド
-- Laravel(認証にsanctum使用)
+- Laravel
 - Filament
 - PHPUnit
 
