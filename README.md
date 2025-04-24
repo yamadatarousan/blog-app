@@ -15,6 +15,11 @@
 - MySQL
 
 ## memo
+### 構成について
+- バックエンドのDBにフロントエンドの表示用データを投入するのはFilamentの管理画面の役割
+- DBに保存されているデータをlaravelのREST APIがフロントエンドに提供する
+
+
 ### tailwindについて
 - tailwindは3.4.14、4系だとinitの際にエラーが出る
 
