@@ -1,6 +1,7 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { ReactNode } from 'react';
+import Navbar from '@/component/Navbar';
 
 export const metadata: Metadata = {
   title: 'Blog Frontend',
@@ -16,7 +17,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           rel="stylesheet"
         />
       </head>
-      <body className="font-sans bg-gray-100">{children}</body>
+      <body className="font-sans bg-gray-100">
+        <Navbar />
+        {children}
+      </body>
     </html>
   );
 }
