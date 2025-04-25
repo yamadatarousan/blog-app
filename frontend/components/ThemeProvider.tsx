@@ -22,14 +22,10 @@ export default function ThemeProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('theme', 'dark');
       document.cookie = 'theme=dark; path=/; max-age=31536000';
       document.documentElement.classList.add('dark');
-      document.documentElement.style.backgroundColor = '#000000';
-      document.documentElement.style.color = '#e5e7eb';
     } else {
       localStorage.setItem('theme', 'light');
       document.cookie = 'theme=light; path=/; max-age=31536000';
       document.documentElement.classList.remove('dark');
-      document.documentElement.style.backgroundColor = '#f3f4f6';
-      document.documentElement.style.color = '#1f2937';
     }
   }, [isDark]);
 

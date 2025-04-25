@@ -22,14 +22,18 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
           rel="stylesheet"
         />
-        <style>{`
-          html, body {
-            background-color: ${isDark ? '#000000 !important' : '#f3f4f6 !important'};
-            color: ${isDark ? '#e5e7eb !important' : '#1f2937 !important'};
-            margin: 0;
-            padding: 0;
-          }
-        `}</style>
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+              html, body, html * {
+                background-color: ${isDark ? '#000000' : '#f3f4f6'} !important;
+                color: ${isDark ? '#e5e7eb' : '#1f2937'} !important;
+                margin: 0;
+                padding: 0;
+              }
+            `,
+          }}
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -53,7 +57,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           }}
         />
       </head>
-      <body className="font-sans bg-gray-100 dark:bg-black">
+      <body className="font-sans">
         <ThemeProvider>
           <Suspense
             fallback={
