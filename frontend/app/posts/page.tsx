@@ -1,121 +1,79 @@
+import Link from 'next/link';
 import { Suspense } from 'react';
 
 type Post = {
   id: number;
   title: string;
   content: string;
-  image?: string;
   category: string;
   created_at: string;
 };
 
-async function PostCard({ post, index }: { post: Post; index: number }) {
+async function PostsContent({ searchParams }: { searchParams: { page?: string; search?: string; category?: string } }) {
+  const page = parseInt(searchParams.page || '1', 10);
+  const search = searchParams.search || '';
+  const category = searchParams.category || '';
+  const perPage = 6;
+  const res = await fetch(
+    `http://127.0.0.1/api/posts?page=${page}&per_page=${perPage}&search=${encodeURIComponent(search)}&category=${encodeURIComponent(category)}`,
+    { cache: 'no-store' }
+  );
+  const { data: posts, last_page: lastPage } = await res.json();
+
   return (
-    <a
-      href={`/posts/${post.id}`}
-      className="block bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 animate-fade-in"
-      style={{ animationDelay: `${index * 0.1}s` }}
-    >
-      {post.image && (
-        <img
-          src={post.image}
-          alt={post.title}
-          className="w-full h-48 object-cover rounded-t-xl"
+    <div className="container mx-auto p-6 min-h-screen bg-gray-100 dark:bg-gray-900" data-testid="container">
+      <h1 className="text-4xl font-bold text-primary dark:text-white mb-8 text-center">Blog Posts</h1>
+      <form className="mb-8 flex flex-col sm:flex-row justify-center gap-4">
+        <input
+          type="text"
+          name="search"
+          placeholder="Search posts..."
+          className="w-full max-w-md p-3 border rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200"
+          defaultValue={search}
         />
-      )}
-      <div className="p-6">
-        <span
-          className={`inline-block px-3 py-1 text-sm font-semibold text-white rounded-full mb-2 ${
-            post.category === 'Tech'
-              ? 'bg-accent'
-              : post.category === 'Lifestyle'
-              ? 'bg-purple-500'
-              : 'bg-gray-500'
-          }`}
+        <select
+          name="category"
+          className="w-full max-w-xs p-3 border rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200"
+          defaultValue={category}
         >
-          {post.category}
-        </span>
-        <h2 className="text-xl font-semibold text-secondary dark:text-white mb-2">{post.title}</h2>
-        <p className="text-gray-600 dark:text-gray-200 line-clamp-2">{post.content}</p>
-        <p className="text-sm text-gray-500 dark:text-gray-200 mt-2">
-          {new Date(post.created_at).toLocaleDateString('ja-JP')}
-        </p>
+          <option value="">All Categories</option>
+          <option value="General">General</option>
+          <option value="Tech">Tech</option>
+          <option value="Lifestyle">Lifestyle</option>
+        </select>
+        <button type="submit" className="px-4 py-2 bg-accent dark:bg-accent-dark text-white rounded-lg">
+          Search
+        </button>
+      </form>
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {posts.map((post: Post) => (
+          <Link
+            key={post.id}
+            href={`/posts/${post.id}`}
+            className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow"
+          >
+            <h2 className="text-xl font-semibold text-primary dark:text-white">{post.title}</h2>
+            <p className="text-gray-600 dark:text-gray-400">{post.category}</p>
+          </Link>
+        ))}
       </div>
-    </a>
+    </div>
   );
 }
 
-async function PostsContent({ searchParams }: { searchParams: { page?: string } }) {
-  const page = parseInt(searchParams.page || '1', 10);
-  const perPage = 6;
-  try {
-    const res = await fetch(`http://127.0.0.1/api/posts?page=${page}&per_page=${perPage}`, {
-      cache: 'no-store',
-    });
-    if (!res.ok) {
-      throw new Error(`API error: ${res.status} ${res.statusText}`);
-    }
-    const { data: posts, last_page }: { data: Post[]; last_page: number } = await res.json();
-
-    return (
-      <div className="container mx-auto p-6 min-h-screen bg-gray-100 dark:bg-gray-900" data-testid="container">
-        <h1 className="text-4xl font-bold text-primary dark:text-white mb-8 text-center animate-fade-in">
-          Blog Posts
-        </h1>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {posts.map((post, index) => (
-            <Suspense
-              key={post.id}
-              fallback={<div className="bg-gray-200 dark:bg-gray-800 h-64 rounded-xl animate-pulse" />}
-            >
-              <PostCard post={post} index={index} />
-            </Suspense>
-          ))}
-        </div>
-        <div className="flex justify-center mt-8 space-x-4">
-          {page > 1 && (
-            <a
-              href={`/posts?page=${page - 1}`}
-              className="px-4 py-2 bg-accent dark:bg-accent-dark text-white rounded-lg hover:bg-opacity-80 dark:hover:bg-opacity-80"
-            >
-              Previous
-            </a>
-          )}
-          {page < last_page && (
-            <a
-              href={`/posts?page=${page + 1}`}
-              className="px-4 py-2 bg-accent dark:bg-accent-dark text-white rounded-lg hover:bg-opacity-80 dark:hover:bg-opacity-80"
-            >
-              Next
-            </a>
-          )}
-        </div>
-      </div>
-    );
-  } catch (error) {
-    return <div className="text-red-500 text-center p-6">Error: {(error as Error).message}</div>;
-  }
-}
-
-export default function Posts({ searchParams }: { searchParams: { page?: string } }) {
+export default function Posts({ searchParams }: { searchParams: { page?: string; search?: string; category?: string } }) {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-200 flex items-center justify-center">
+        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
           <svg
             className="animate-spin h-10 w-10 text-gray-200"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
+            role="status"
           >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            />
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path
               className="opacity-75"
               fill="currentColor"
