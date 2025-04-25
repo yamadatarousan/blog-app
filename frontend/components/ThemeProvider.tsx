@@ -8,7 +8,6 @@ export default function ThemeProvider({ children }: { children: ReactNode }) {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    // クッキーまたはlocalStorageからテーマを取得
     const savedTheme =
       document.cookie
         .split('; ')
@@ -19,7 +18,6 @@ export default function ThemeProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    // テーマ変更時にlocalStorageとクッキーを更新
     if (isDark) {
       localStorage.setItem('theme', 'dark');
       document.cookie = 'theme=dark; path=/; max-age=31536000';
@@ -35,7 +33,6 @@ export default function ThemeProvider({ children }: { children: ReactNode }) {
     }
   }, [isDark]);
 
-  // マウント前にダークテーマ優先のプレースホルダー
   if (!isMounted) {
     return (
       <div
