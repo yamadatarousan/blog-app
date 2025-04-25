@@ -1,6 +1,6 @@
-// frontend/app/posts/[id]/page.tsx（変更なし、参考）
+// frontend/app/posts/[id]/page.tsx
 'use client';
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 
@@ -20,7 +20,7 @@ type Comment = {
   created_at: string;
 };
 
-export default function Post() {
+function PostContent() {
   const [post, setPost] = useState<Post | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
@@ -91,7 +91,7 @@ export default function Post() {
   }
 
   if (!post) {
-    return <div className="text-gray-500 dark:text-gray-200 text-center p-6">Loading...</div>;
+    return <div className="text-gray-200 text-center p-6">Loading...</div>;
   }
 
   return (
@@ -172,5 +172,13 @@ export default function Post() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Post() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black text-gray-200">Loading...</div>}>
+      <PostContent />
+    </Suspense>
   );
 }

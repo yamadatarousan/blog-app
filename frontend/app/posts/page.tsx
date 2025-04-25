@@ -1,4 +1,6 @@
-// frontend/app/posts/page.tsx（変更なし、参考）
+// frontend/app/posts/page.tsx
+import { Suspense } from 'react';
+
 type Post = {
   id: number;
   title: string;
@@ -8,7 +10,7 @@ type Post = {
   created_at: string;
 };
 
-export default async function Posts({ searchParams }: { searchParams: { page?: string } }) {
+async function PostsContent({ searchParams }: { searchParams: { page?: string } }) {
   const page = parseInt(searchParams.page || '1', 10);
   const perPage = 6;
   try {
@@ -84,4 +86,12 @@ export default async function Posts({ searchParams }: { searchParams: { page?: s
   } catch (error) {
     return <div className="text-red-500 text-center p-6">Error: {error.message}</div>;
   }
+}
+
+export default function Posts({ searchParams }: { searchParams: { page?: string } }) {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black text-gray-200">Loading...</div>}>
+      <PostsContent searchParams={searchParams} />
+    </Suspense>
+  );
 }

@@ -2,7 +2,7 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
-import { ReactNode } from 'react';
+import { ReactNode, Suspense } from 'react';
 import ThemeProvider from '@/components/ThemeProvider';
 
 export const metadata: Metadata = {
@@ -23,10 +23,16 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
           rel="stylesheet"
         />
-        {/* 即時背景色適用でチラつき防止 */}
+        {/* チラつき防止：即時背景色と最小限のスタイル */}
         <style>{`
-          body {
-            background-color: ${isDark ? '#000000' : '#f3f4f6'};
+          html, body {
+            background-color: ${isDark ? '#000000 !important' : '#f3f4f6 !important'};
+            color: ${isDark ? '#e5e7eb !important' : '#1f2937 !important'};
+            margin: 0;
+            padding: 0;
+          }
+          * {
+            transition: none !important; /* アニメーション遅延を無効化 */
           }
         `}</style>
         {/* クライアントでのテーマ同期 */}
@@ -38,8 +44,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                   const theme = localStorage.getItem('theme') || document.cookie.split('; ').find(row => row.startsWith('theme='))?.split('=')[1];
                   if (theme === 'dark') {
                     document.documentElement.classList.add('dark');
+                    document.documentElement.style.backgroundColor = '#000000';
+                    document.documentElement.style.color = '#e5e7eb';
                   } else {
                     document.documentElement.classList.remove('dark');
+                    document.documentElement.style.backgroundColor = '#f3f4f6';
+                    document.documentElement.style.color = '#1f2937';
                   }
                 } catch (e) {
                   console.error('Theme script error:', e);
@@ -50,7 +60,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         />
       </head>
       <body className="font-sans bg-gray-100 dark:bg-black">
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <Suspense fallback={<div className="min-h-screen bg-gray-100 dark:bg-black" />}>
+            {children}
+          </Suspense>
+        </ThemeProvider>
       </body>
     </html>
   );
