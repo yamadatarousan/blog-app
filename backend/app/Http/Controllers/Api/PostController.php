@@ -42,6 +42,7 @@ class PostController extends Controller
             'content' => $post->content,
             'category' => $post->category,
             'created_at' => $post->created_at,
+            'image' => $post->image,
             'likes' => $post->likes()->count(),
             'liked' => $sessionId ? $post->likes()->where('session_id', $sessionId)->exists() : false,
         ]);

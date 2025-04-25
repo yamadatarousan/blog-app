@@ -11,7 +11,8 @@ type Post = {
   category: string;
   created_at: string;
   likes: number;
-  liked: boolean; // 追加
+  liked: boolean;
+  image?: string; // 画像URLを追加（任意）
 };
 
 type Comment = {
@@ -46,6 +47,16 @@ async function PostContent({ params }: { params: { id: string } }) {
       <p className="text-gray-600 dark:text-gray-400 mb-4">
         {post.category} | {new Date(post.created_at).toLocaleDateString()}
       </p>
+      {/* 画像表示 */}
+      {post.image ? (
+        <img
+          src={post.image}
+          alt={post.title}
+          className="w-full max-w-2xl mx-auto mb-8 rounded-lg shadow-md object-cover"
+        />
+      ) : (
+        <p className="text-gray-600 dark:text-gray-400 mb-8">No image available</p>
+      )}
       <p className="text-gray-700 dark:text-gray-200 mb-8">{post.content}</p>
       <LikeButton postId={post.id} initialLikes={post.likes} initialLiked={post.liked} />
       <h2 className="text-2xl font-semibold text-primary dark:text-white mt-12 mb-4">Comments</h2>
