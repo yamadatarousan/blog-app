@@ -1,4 +1,4 @@
-// frontend/components/Navbar.tsx
+// frontend/components/Navbar.tsx（変更なし、参考）
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -20,17 +20,14 @@ const Navbar: React.FC<NavbarProps> = ({ isDark, setIsDark }) => {
   ];
 
   return (
-    <nav className="bg-indigo-600 dark:bg-gray-900 text-white dark:text-gray-200 shadow-lg">
+    <nav className="bg-indigo-600 dark:bg-gray-900 text-white dark:text-gray-200 shadow-lg" data-testid="navbar">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
-          {/* ロゴ */}
           <div className="flex items-center">
             <Link href="/" className="text-2xl font-bold tracking-tight">
               Blog App
             </Link>
           </div>
-
-          {/* デスクトップ用ナビゲーション */}
           <div className="hidden lg:flex lg:items-center lg:space-x-4">
             {navItems.map((item) => (
               <Link
@@ -57,8 +54,6 @@ const Navbar: React.FC<NavbarProps> = ({ isDark, setIsDark }) => {
               )}
             </button>
           </div>
-
-          {/* モバイル用ハンバーガーボタン */}
           <div className="flex items-center lg:hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -83,8 +78,6 @@ const Navbar: React.FC<NavbarProps> = ({ isDark, setIsDark }) => {
           </div>
         </div>
       </div>
-
-      {/* モバイルメニュー */}
       {isMenuOpen && (
         <div className="lg:hidden px-4 pb-4 bg-indigo-600 dark:bg-gray-900 transition-all duration-300 ease-in-out">
           {navItems.map((item) => (

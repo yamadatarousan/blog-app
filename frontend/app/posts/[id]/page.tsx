@@ -1,4 +1,4 @@
-// frontend/app/posts/[id]/page.tsx
+// frontend/app/posts/[id]/page.tsx（変更なし、参考）
 'use client';
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
@@ -126,8 +126,6 @@ export default function Post() {
         >
           ← Back to Posts
         </Link>
-
-        {/* コメント欄 */}
         <div className="mt-12">
           <h2 className="text-2xl font-semibold text-primary dark:text-white mb-6">コメント</h2>
           {comments.length === 0 ? (

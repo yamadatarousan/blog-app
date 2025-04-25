@@ -1,4 +1,4 @@
-// frontend/app/posts/page.tsx
+// frontend/app/posts/page.tsx（変更なし、参考）
 type Post = {
   id: number;
   title: string;

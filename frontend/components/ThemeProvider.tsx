@@ -4,18 +4,19 @@ import { ReactNode, useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 
 export default function ThemeProvider({ children }: { children: ReactNode }) {
+  // サーバーではfalse、クライアントでlocalStorageを即反映
   const [isDark, setIsDark] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
-  // ページロード時にlocalStorageからテーマを復元
   useEffect(() => {
+    // クライアントで初回マウント時にlocalStorageをチェック
     const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-      setIsDark(true);
-    }
+    setIsDark(savedTheme === 'dark');
+    setIsMounted(true);
   }, []);
 
-  // テーマ変更時にlocalStorageとhtmlクラスを更新
   useEffect(() => {
+    // テーマ変更時にlocalStorageとhtmlクラスを更新
     if (isDark) {
       localStorage.setItem('theme', 'dark');
       document.documentElement.classList.add('dark');
@@ -24,6 +25,11 @@ export default function ThemeProvider({ children }: { children: ReactNode }) {
       document.documentElement.classList.remove('dark');
     }
   }, [isDark]);
+
+  // マウント前にレンダリングをスキップ（ハイドレーション不一致を回避）
+  if (!isMounted) {
+    return null;
+  }
 
   return (
     <>

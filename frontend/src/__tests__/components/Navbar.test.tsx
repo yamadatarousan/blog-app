@@ -20,6 +20,7 @@ describe('Navbar', () => {
     expect(screen.getByText('About')).toBeInTheDocument();
     expect(screen.getByLabelText('Toggle theme')).toBeInTheDocument();
     expect(screen.getByTestId('navbar')).toHaveClass('bg-indigo-600');
+    expect(screen.getByTestId('theme-icon')).toHaveClass('text-gray-200'); // MoonIcon
   });
 
   it('renders nav items and toggle button in dark mode', () => {
@@ -33,6 +34,7 @@ describe('Navbar', () => {
     expect(screen.getByText('About')).toBeInTheDocument();
     expect(screen.getByLabelText('Toggle theme')).toBeInTheDocument();
     expect(screen.getByTestId('navbar')).toHaveClass('bg-gray-900');
+    expect(screen.getByTestId('theme-icon')).toHaveClass('text-yellow-400'); // SunIcon
   });
 
   it('toggles mobile menu', () => {

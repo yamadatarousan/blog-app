@@ -1,3 +1,4 @@
+// frontend/tailwind.config.js
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
@@ -14,6 +15,6 @@ module.exports = {
       },
     },
   },
-  darkMode: 'class', // ダークモードをclassベースで有効
+  darkMode: 'class',
   plugins: [],
 };
