@@ -36,11 +36,18 @@ class PostResource extends Resource
                 Tables\Columns\TextColumn::make('title'),
                 Tables\Columns\TextColumn::make('content')->limit(50),
                 Tables\Columns\TextColumn::make('category'),
-                Tables\Columns\ImageColumn::make('image'),                
+                Tables\Columns\ImageColumn::make('image'),
+                Tables\Columns\TextColumn::make('likes_count')->label('Likes')->counts('likes'),              
+            ])
+            ->filters([
+                //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
+            ])
+            ->bulkActions([
+                Tables\Actions\DeleteBulkAction::make(),
             ]);
     }
 
