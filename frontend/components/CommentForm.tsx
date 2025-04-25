@@ -1,10 +1,12 @@
-// frontend/components/CommentForm.tsx
 'use client';
+
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function CommentForm({ postId }: { postId: string }) {
   const [newComment, setNewComment] = useState('');
   const [error, setError] = useState('');
+  const router = useRouter();
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,9 +23,10 @@ export default function CommentForm({ postId }: { postId: string }) {
         throw new Error(`Comment submission error: ${res.status} ${res.statusText}`);
       }
 
-      setNewComment('');
+      setNewComment(''); // フォームをクリア
+      router.refresh(); // サーバーコンポーネントを再フェッチ
     } catch (err) {
-      setError(err.message);
+      setError((err as Error).message);
     }
   };
 
