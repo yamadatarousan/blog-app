@@ -6,6 +6,16 @@ html, body {
   @apply bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-200;
 }
 
+/* テーマ切り替え時のちらつきを抑制 */
+:where([data-theme="dark"]) {
+  color-scheme: dark;
+}
+
+/* クライアントサイドでテーマを即適用 */
+script#theme-script {
+  display: none;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
