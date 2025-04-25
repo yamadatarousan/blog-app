@@ -16,10 +16,10 @@ const Navbar: React.FC = () => {
     setMounted(true);
   }, []);
 
-  // マウント前はニュートラルなスタイルでレンダリング
+  // マウント前はCSS変数で背景色を制御
   if (!mounted) {
     return (
-      <nav className="bg-gray-800 text-white shadow-lg" data-testid="navbar">
+      <nav className="text-white shadow-lg" data-testid="navbar">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
@@ -37,19 +37,19 @@ const Navbar: React.FC = () => {
                   href={item.href}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     pathname === item.href
-                      ? 'bg-gray-900 text-white'
-                      : 'hover:bg-gray-700 hover:text-white'
+                      ? 'bg-indigo-800 text-white'
+                      : 'hover:bg-indigo-500 hover:text-white'
                   }`}
                 >
                   {item.name}
                 </Link>
               ))}
-              {/* テーマボタンはマウント前は非表示 */}
+              {/* テーマボタンは非表示 */}
             </div>
             <div className="flex items-center lg:hidden">
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="p-2 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-white"
+                className="p-2 rounded-md hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-white"
                 aria-label="Toggle menu"
               >
                 <svg
@@ -71,7 +71,7 @@ const Navbar: React.FC = () => {
           </div>
         </div>
         {isMenuOpen && (
-          <div className="lg:hidden px-4 pb-4 bg-gray-800 transition-all duration-300 ease-in-out">
+          <div className="lg:hidden px-4 pb-4 text-white transition-all duration-300 ease-in-out">
             {[
               { name: 'Posts', href: '/posts' },
               { name: 'About', href: '/about' },
@@ -81,8 +81,8 @@ const Navbar: React.FC = () => {
                 href={item.href}
                 className={`block px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                   pathname === item.href
-                    ? 'bg-gray-900 text-white'
-                    : 'hover:bg-gray-700 hover:text-white'
+                    ? 'bg-indigo-800 text-white'
+                    : 'hover:bg-indigo-500 hover:text-white'
                 }`}
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -97,7 +97,7 @@ const Navbar: React.FC = () => {
 
   return (
     <nav
-      className="bg-indigo-600 dark:bg-gray-900 text-white dark:text-gray-200 shadow-lg transition-colors duration-200"
+      className="bg-indigo-600 dark:bg-gray-900 text-white dark:text-gray-200 shadow-lg transition-colors duration-300"
       data-testid="navbar"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
