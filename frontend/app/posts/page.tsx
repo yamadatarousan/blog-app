@@ -10,6 +10,42 @@ type Post = {
   created_at: string;
 };
 
+async function PostCard({ post, index }: { post: Post; index: number }) {
+  return (
+    <a
+      href={`/posts/${post.id}`}
+      className="block bg-white dark:bg-gray-900 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 animate-fade-in"
+      style={{ animationDelay: `${index * 0.1}s` }}
+    >
+      {post.image && (
+        <img
+          src={post.image}
+          alt={post.title}
+          className="w-full h-48 object-cover rounded-t-xl"
+        />
+      )}
+      <div className="p-6">
+        <span
+          className={`inline-block px-3 py-1 text-sm font-semibold text-white rounded-full mb-2 ${
+            post.category === 'Tech'
+              ? 'bg-accent'
+              : post.category === 'Lifestyle'
+              ? 'bg-purple-500'
+              : 'bg-gray-500'
+          }`}
+        >
+          {post.category}
+        </span>
+        <h2 className="text-xl font-semibold text-secondary dark:text-white mb-2">{post.title}</h2>
+        <p className="text-gray-600 dark:text-gray-200 line-clamp-2">{post.content}</p>
+        <p className="text-sm text-gray-500 dark:text-gray-200 mt-2">
+          {new Date(post.created_at).toLocaleDateString('ja-JP')}
+        </p>
+      </div>
+    </a>
+  );
+}
+
 async function PostsContent({ searchParams }: { searchParams: { page?: string } }) {
   const page = parseInt(searchParams.page || '1', 10);
   const perPage = 6;
@@ -29,38 +65,14 @@ async function PostsContent({ searchParams }: { searchParams: { page?: string } 
         </h1>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {posts.map((post, index) => (
-            <a
+            <Suspense
               key={post.id}
-              href={`/posts/${post.id}`}
-              className="block bg-white dark:bg-gray-900 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 animate-fade-in"
-              style={{ animationDelay: `${index * 0.1}s` }}
+              fallback={
+                <div className="bg-black h-64 rounded-xl animate-pulse" />
+              }
             >
-              {post.image && (
-                <img
-                  src={post.image}
-                  alt={post.title}
-                  className="w-full h-48 object-cover rounded-t-xl"
-                />
-              )}
-              <div className="p-6">
-                <span
-                  className={`inline-block px-3 py-1 text-sm font-semibold text-white rounded-full mb-2 ${
-                    post.category === 'Tech'
-                      ? 'bg-accent'
-                      : post.category === 'Lifestyle'
-                      ? 'bg-purple-500'
-                      : 'bg-gray-500'
-                  }`}
-                >
-                  {post.category}
-                </span>
-                <h2 className="text-xl font-semibold text-secondary dark:text-white mb-2">{post.title}</h2>
-                <p className="text-gray-600 dark:text-gray-200 line-clamp-2">{post.content}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-200 mt-2">
-                  {new Date(post.created_at).toLocaleDateString('ja-JP')}
-                </p>
-              </div>
-            </a>
+              <PostCard post={post} index={index} />
+            </Suspense>
           ))}
         </div>
         <div className="flex justify-center mt-8 space-x-4">
@@ -90,7 +102,32 @@ async function PostsContent({ searchParams }: { searchParams: { page?: string } 
 
 export default function Posts({ searchParams }: { searchParams: { page?: string } }) {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-black text-gray-200">Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-black text-gray-200 flex items-center justify-center">
+          <svg
+            className="animate-spin h-8 w-8 text-gray-200"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            ></circle>
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
+          </svg>
+        </div>
+      }
+    >
       <PostsContent searchParams={searchParams} />
     </Suspense>
   );

@@ -48,9 +48,9 @@ const Navbar: React.FC<NavbarProps> = ({ isDark, setIsDark }) => {
               aria-label="Toggle theme"
             >
               {isDark ? (
-                <SunIcon className="w-5 h-5 text-yellow-400" />
+                <SunIcon className="w-5 h-5 text-yellow-400" data-testid="theme-icon" />
               ) : (
-                <MoonIcon className="w-5 h-5 text-gray-200" />
+                <MoonIcon className="w-5 h-5 text-gray-200" data-testid="theme-icon" />
               )}
             </button>
           </div>
