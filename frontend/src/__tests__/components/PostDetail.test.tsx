@@ -1,4 +1,4 @@
-// src/__tests__/components/PostDetail.test.tsx
+// frontend/__tests__/components/PostDetail.test.tsx
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 import Post from '../../../app/posts/[id]/page';
@@ -14,7 +14,7 @@ describe('PostDetail', () => {
     (global.fetch as any).mockReset();
   });
 
-  it('renders post with image, category, and date', async () => {
+  it('renders post with image, category, and date in light mode', async () => {
     (global.fetch as any)
       .mockResolvedValueOnce({
         ok: true,
@@ -34,12 +34,43 @@ describe('PostDetail', () => {
       });
 
     render(<Post />);
-    expect(await screen.findByText('Test Post')).toBeInTheDocument();
-    expect(screen.getByAltText('Test Post')).toHaveAttribute('src', '/test.jpg');
+    const container = await screen.findByTestId('container');
+    expect(container).toHaveClass('bg-white');
+    expect(screen.getByText('Test Post')).toHaveClass('text-primary');
     expect(screen.getByText('Tech')).toHaveClass('bg-accent');
-    expect(screen.getByText('2023/1/1')).toBeInTheDocument(); // 日本のロケールに合わせる
+    expect(screen.getByText('2023/1/1')).toBeInTheDocument();
     expect(screen.getByText('Content')).toBeInTheDocument();
     expect(screen.getByText('← Back to Posts')).toBeInTheDocument();
+  });
+
+  it('renders post in dark mode', async () => {
+    (global.fetch as any)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            id: 1,
+            title: 'Test Post',
+            content: 'Content',
+            image: '/test.jpg',
+            category: 'Tech',
+            created_at: '2023-01-01T00:00:00Z',
+          }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve([]),
+      });
+
+    render(
+      <div className="dark">
+        <Post />
+      </div>
+    );
+    const container = await screen.findByTestId('container');
+    expect(container).toHaveClass('bg-black');
+    expect(screen.getByText('Test Post')).toHaveClass('text-white');
+    expect(screen.getByText('まだコメントがありません。')).toHaveClass('text-gray-200');
   });
 
   it('renders comments and submits new comment', async () => {

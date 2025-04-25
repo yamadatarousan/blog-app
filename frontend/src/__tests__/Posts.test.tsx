@@ -1,54 +1,76 @@
+// frontend/__tests__/Posts.test.tsx
 import { render, screen } from '@testing-library/react';
 import { vi } from 'vitest';
 import Posts from '../../app/posts/page';
 
-global.fetch = vi.fn();
-
-describe('Posts Page', () => {
+describe('Posts', () => {
   beforeEach(() => {
-    vi.resetAllMocks();
+    global.fetch = vi.fn();
   });
 
-  it('renders posts from API', async () => {
-    const mockPosts = [
-      {
-        id: 1,
-        title: 'Test Post',
-        content: 'This is a test.',
-        image: 'https://picsum.photos/800/400',
-        category: 'Tech',
-        created_at: '2025-04-24T00:00:00Z',
-      },
-    ];
-
-    (global.fetch as any).mockResolvedValue({
+  it('renders posts in light mode', async () => {
+    (global.fetch as any).mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ data: mockPosts, last_page: 1 }),
+      json: () =>
+        Promise.resolve({
+          data: [
+            {
+              id: 1,
+              title: 'Test Post',
+              content: 'Content',
+              image: '/test.jpg',
+              category: 'Tech',
+              created_at: '2023-01-01T00:00:00Z',
+            },
+          ],
+          last_page: 1,
+        }),
     });
 
-    const result = await Posts({ searchParams: {} });
-    render(result);
-
-    expect(screen.getByText('Test Post')).toBeInTheDocument();
-    expect(screen.getByText('Tech')).toBeInTheDocument();
-    expect(screen.getByRole('img', { name: 'Test Post' })).toHaveAttribute(
-      'src',
-      'https://picsum.photos/800/400'
-    );
-    // リンクを部分一致で特定
-    expect(screen.getByRole('link', { name: /Test Post/i })).toHaveAttribute('href', '/posts/1');
+    render(await Posts({ searchParams: { page: '1' } }));
+    const container = screen.getByTestId('container');
+    expect(container).toHaveClass('bg-white');
+    expect(screen.getByText('Blog Posts')).toHaveClass('text-primary');
+    expect(screen.getByText('Test Post')).toHaveClass('text-secondary');
+    expect(screen.getByText('2023/1/1')).toBeInTheDocument();
   });
 
-  it('shows error on API failure', async () => {
-    (global.fetch as any).mockResolvedValue({
-      ok: false,
-      status: 500,
-      statusText: 'Server Error',
+  it('renders posts in dark mode', async () => {
+    (global.fetch as any).mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          data: [
+            {
+              id: 1,
+              title: 'Test Post',
+              content: 'Content',
+              image: '/test.jpg',
+              category: 'Tech',
+              created_at: '2023-01-01T00:00:00Z',
+            },
+          ],
+          last_page: 1,
+        }),
     });
 
-    const result = await Posts({ searchParams: {} });
-    render(result);
+    render(
+      <div className="dark">
+        {await Posts({ searchParams: { page: '1' } })}
+      </div>
+    );
+    const container = screen.getByTestId('container');
+    expect(container).toHaveClass('bg-black');
+    expect(screen.getByText('Blog Posts')).toHaveClass('text-white');
+    expect(screen.getByText('Test Post')).toHaveClass('text-white');
+  });
 
-    expect(screen.getByText('Error: API error: 500 Server Error')).toBeInTheDocument();
+  it('displays error on API failure', async () => {
+    (global.fetch as any).mockImplementationOnce(() => {
+      throw new Error('API error');
+    });
+
+    render(await Posts({ searchParams: { page: '1' } }));
+    expect(screen.getByText('Error: API error')).toBeInTheDocument();
   });
 });

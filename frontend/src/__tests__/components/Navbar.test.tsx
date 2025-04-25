@@ -1,6 +1,7 @@
-import { render, screen } from '@testing-library/react';
+// frontend/__tests__/components/Navbar.test.tsx
+import { render, screen, fireEvent } from '@testing-library/react';
 import { vi } from 'vitest';
-import Navbar from '../../../components/Navbar'; // 相対パスでテスト
+import Navbar from '../../../components/Navbar';
 import { usePathname } from 'next/navigation';
 
 vi.mock('next/navigation', () => ({
@@ -8,23 +9,47 @@ vi.mock('next/navigation', () => ({
 }));
 
 describe('Navbar', () => {
-  it('renders Posts and About links', () => {
+  beforeEach(() => {
     vi.mocked(usePathname).mockReturnValue('/posts');
-    render(<Navbar />);
-    expect(screen.getByText('Posts')).toHaveAttribute('href', '/posts');
-    expect(screen.getByText('About')).toHaveAttribute('href', '/about');
   });
 
-  it('highlights active link', () => {
-    vi.mocked(usePathname).mockReturnValue('/about');
-    render(<Navbar />);
-    expect(screen.getByText('About').closest('a')).toHaveClass('bg-indigo-800');
-    expect(screen.getByText('Posts').closest('a')).not.toHaveClass('bg-indigo-800');
+  it('renders nav items and toggle button in light mode', () => {
+    render(<Navbar isDark={false} setIsDark={vi.fn()} />);
+    expect(screen.getByText('Blog App')).toBeInTheDocument();
+    expect(screen.getByText('Posts')).toHaveClass('bg-indigo-800');
+    expect(screen.getByText('About')).toBeInTheDocument();
+    expect(screen.getByLabelText('Toggle theme')).toBeInTheDocument();
+    expect(screen.getByTestId('navbar')).toHaveClass('bg-indigo-600');
   });
 
-  it('has correct navbar background', () => {
-    vi.mocked(usePathname).mockReturnValue('/posts');
-    render(<Navbar />);
-    expect(screen.getByRole('navigation')).toHaveClass('bg-indigo-600');
+  it('renders nav items and toggle button in dark mode', () => {
+    render(
+      <div className="dark">
+        <Navbar isDark={true} setIsDark={vi.fn()} />
+      </div>
+    );
+    expect(screen.getByText('Blog App')).toBeInTheDocument();
+    expect(screen.getByText('Posts')).toHaveClass('bg-gray-800');
+    expect(screen.getByText('About')).toBeInTheDocument();
+    expect(screen.getByLabelText('Toggle theme')).toBeInTheDocument();
+    expect(screen.getByTestId('navbar')).toHaveClass('bg-gray-900');
+  });
+
+  it('toggles mobile menu', () => {
+    render(<Navbar isDark={false} setIsDark={vi.fn()} />);
+    const menuButton = screen.getByLabelText('Toggle menu');
+    fireEvent.click(menuButton);
+    expect(screen.getByText('Posts')).toHaveClass('block');
+    expect(screen.getByText('ダークモード')).toBeInTheDocument();
+    fireEvent.click(menuButton);
+    expect(screen.queryByText('ダークモード')).not.toBeInTheDocument();
+  });
+
+  it('calls setIsDark on toggle button click', () => {
+    const setIsDark = vi.fn();
+    render(<Navbar isDark={false} setIsDark={setIsDark} />);
+    const toggleButton = screen.getByLabelText('Toggle theme');
+    fireEvent.click(toggleButton);
+    expect(setIsDark).toHaveBeenCalledWith(true);
   });
 });

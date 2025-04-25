@@ -91,12 +91,12 @@ export default function Post() {
   }
 
   if (!post) {
-    return <div className="text-gray-500 text-center p-6">Loading...</div>;
+    return <div className="text-gray-500 dark:text-gray-200 text-center p-6">Loading...</div>;
   }
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="bg-white rounded-xl shadow-lg p-8 max-w-3xl mx-auto animate-fade-in">
+    <div className="container mx-auto p-6 bg-white dark:bg-black min-h-screen" data-testid="container">
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-8 max-w-3xl mx-auto animate-fade-in">
         {post.image && (
           <img
             src={post.image}
@@ -115,33 +115,33 @@ export default function Post() {
         >
           {post.category}
         </span>
-        <h1 className="text-4xl font-bold text-primary mb-4">{post.title}</h1>
-        <p className="text-gray-500 mb-6">
-          {new Date(post.created_at).toLocaleDateString()}
+        <h1 className="text-4xl font-bold text-primary dark:text-white mb-4">{post.title}</h1>
+        <p className="text-gray-500 dark:text-gray-200 mb-6">
+          {new Date(post.created_at).toLocaleDateString('ja-JP')}
         </p>
-        <div className="prose prose-lg text-gray-700 mb-8">{post.content}</div>
+        <div className="prose prose-lg text-gray-700 dark:text-gray-200 mb-8">{post.content}</div>
         <Link
           href="/posts"
-          className="mt-6 inline-block text-accent hover:underline"
+          className="mt-6 inline-block text-accent dark:text-accent-dark hover:underline"
         >
           ← Back to Posts
         </Link>
 
         {/* コメント欄 */}
         <div className="mt-12">
-          <h2 className="text-2xl font-semibold text-primary mb-6">コメント</h2>
+          <h2 className="text-2xl font-semibold text-primary dark:text-white mb-6">コメント</h2>
           {comments.length === 0 ? (
-            <p className="text-gray-500 mb-6">まだコメントがありません。</p>
+            <p className="text-gray-500 dark:text-gray-200 mb-6">まだコメントがありません。</p>
           ) : (
             <ul className="space-y-4 mb-6">
               {comments.map((comment) => (
                 <li
                   key={comment.id}
-                  className="bg-gray-50 p-4 rounded-lg shadow-sm"
+                  className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg shadow-sm"
                 >
-                  <p className="text-gray-700">{comment.content}</p>
-                  <p className="text-sm text-gray-500 mt-1">
-                    {new Date(comment.created_at).toLocaleDateString()}
+                  <p className="text-gray-700 dark:text-gray-200">{comment.content}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    {new Date(comment.created_at).toLocaleDateString('ja-JP')}
                   </p>
                 </li>
               ))}
@@ -151,7 +151,7 @@ export default function Post() {
             <div>
               <label
                 htmlFor="comment"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-200"
               >
                 コメントを追加
               </label>
@@ -159,14 +159,14 @@ export default function Post() {
                 id="comment"
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
-                className="w-full p-3 border rounded-lg focus:ring-accent focus:border-accent"
+                className="w-full p-3 border rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700 focus:ring-accent focus:border-accent"
                 rows={4}
                 required
               />
             </div>
             <button
               type="submit"
-              className="bg-accent text-white py-2 px-4 rounded-lg hover:bg-opacity-90 transition"
+              className="bg-accent dark:bg-accent-dark text-white py-2 px-4 rounded-lg hover:bg-opacity-90 dark:hover:bg-opacity-90 transition"
             >
               コメントする
             </button>
