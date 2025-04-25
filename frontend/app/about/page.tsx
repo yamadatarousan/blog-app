@@ -1,7 +1,7 @@
 // frontend/app/about/page.tsx
 export default async function About() {
     return (
-      <div className="container mx-auto p-6 bg-white dark:bg-black min-h-screen" data-testid="container">
+      <div className="container mx-auto p-6 min-h-screen" data-testid="container">
         <h1 className="text-4xl font-bold text-primary dark:text-white mb-8 text-center animate-fade-in">
           About
         </h1>

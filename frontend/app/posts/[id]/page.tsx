@@ -95,7 +95,7 @@ function PostContent() {
   }
 
   return (
-    <div className="container mx-auto p-6 bg-white dark:bg-black min-h-screen" data-testid="container">
+    <div className="container mx-auto p-6 min-h-screen" data-testid="container">
       <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-8 max-w-3xl mx-auto animate-fade-in">
         {post.image && (
           <img

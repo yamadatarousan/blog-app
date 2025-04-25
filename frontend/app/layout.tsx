@@ -23,14 +23,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           rel="stylesheet"
         />
         <style>{`
-          html, body, .container {
+          body {
             background-color: ${isDark ? '#000000 !important' : '#f3f4f6 !important'};
             color: ${isDark ? '#e5e7eb !important' : '#1f2937 !important'};
-            margin: 0;
-            padding: 0;
-          }
-          * {
-            transition: none !important;
           }
         `}</style>
         <script
@@ -43,18 +38,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                     document.documentElement.classList.add('dark');
                     document.documentElement.style.backgroundColor = '#000000';
                     document.documentElement.style.color = '#e5e7eb';
-                    document.querySelectorAll('.container').forEach(el => {
-                      el.style.backgroundColor = '#000000';
-                      el.style.color = '#e5e7eb';
-                    });
                   } else {
                     document.documentElement.classList.remove('dark');
                     document.documentElement.style.backgroundColor = '#f3f4f6';
                     document.documentElement.style.color = '#1f2937';
-                    document.querySelectorAll('.container').forEach(el => {
-                      el.style.backgroundColor = '#f3f4f6';
-                      el.style.color = '#1f2937';
-                    });
                   }
                 } catch (e) {
                   console.error('Theme script error:', e);
@@ -66,7 +53,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       </head>
       <body className="font-sans bg-gray-100 dark:bg-black">
         <ThemeProvider>
-          <Suspense fallback={<div className="min-h-screen bg-black text-gray-200" />}>
+          <Suspense fallback={<div className="min-h-screen bg-black text-gray-200">Loading...</div>}>
             {children}
           </Suspense>
         </ThemeProvider>
