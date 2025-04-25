@@ -11,6 +11,10 @@ vi.mock('next/navigation', () => ({
 describe('Navbar', () => {
   beforeEach(() => {
     vi.mocked(usePathname).mockReturnValue('/posts');
+    Object.defineProperty(document, 'cookie', {
+      writable: true,
+      value: '',
+    });
   });
 
   it('renders nav items and toggle button in light mode', () => {
