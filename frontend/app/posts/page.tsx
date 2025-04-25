@@ -1,4 +1,3 @@
-// frontend/app/posts/page.tsx
 import { Suspense } from 'react';
 
 type Post = {
@@ -14,7 +13,7 @@ async function PostCard({ post, index }: { post: Post; index: number }) {
   return (
     <a
       href={`/posts/${post.id}`}
-      className="block bg-white dark:bg-gray-900 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 animate-fade-in"
+      className="block bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 animate-fade-in"
       style={{ animationDelay: `${index * 0.1}s` }}
     >
       {post.image && (
@@ -59,7 +58,7 @@ async function PostsContent({ searchParams }: { searchParams: { page?: string } 
     const { data: posts, last_page }: { data: Post[]; last_page: number } = await res.json();
 
     return (
-      <div className="container mx-auto p-6 min-h-screen" data-testid="container">
+      <div className="container mx-auto p-6 min-h-screen bg-gray-100 dark:bg-gray-900" data-testid="container">
         <h1 className="text-4xl font-bold text-primary dark:text-white mb-8 text-center animate-fade-in">
           Blog Posts
         </h1>
@@ -67,7 +66,7 @@ async function PostsContent({ searchParams }: { searchParams: { page?: string } 
           {posts.map((post, index) => (
             <Suspense
               key={post.id}
-              fallback={<div className="bg-black h-64 rounded-xl animate-pulse" />}
+              fallback={<div className="bg-gray-200 dark:bg-gray-800 h-64 rounded-xl animate-pulse" />}
             >
               <PostCard post={post} index={index} />
             </Suspense>
@@ -94,7 +93,7 @@ async function PostsContent({ searchParams }: { searchParams: { page?: string } 
       </div>
     );
   } catch (error) {
-    return <div className="text-red-500 text-center p-6">Error: {error.message}</div>;
+    return <div className="text-red-500 text-center p-6">Error: {(error as Error).message}</div>;
   }
 }
 
@@ -102,7 +101,7 @@ export default function Posts({ searchParams }: { searchParams: { page?: string 
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-black text-gray-200 flex items-center justify-center">
+        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-200 flex items-center justify-center">
           <svg
             className="animate-spin h-10 w-10 text-gray-200"
             xmlns="http://www.w3.org/2000/svg"

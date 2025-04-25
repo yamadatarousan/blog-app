@@ -1,4 +1,3 @@
-// frontend/app/posts/[id]/page.tsx
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -22,7 +21,7 @@ type Comment = {
 
 async function PostDetail({ id }: { id: string }) {
   const res = await fetch(`http://127.0.0.1/api/posts/${id}`, {
-    cache: 'no-store',
+    cache: 'no-store', // 最新データを取得
   });
   if (!res.ok) {
     if (res.status === 404) notFound();
@@ -66,12 +65,19 @@ async function PostDetail({ id }: { id: string }) {
 
 async function Comments({ id }: { id: string }) {
   const res = await fetch(`http://127.0.0.1/api/posts/${id}/comments`, {
-    cache: 'no-store',
+    cache: 'no-store', // 最新データを取得
   });
   if (!res.ok) {
-    throw new Error(`Comments API error: ${res.status} ${res.statusText}`);
+    return (
+      <p className="text-red-500 dark:text-red-400 mb-6">
+        コメントの取得に失敗しました: {res.status} {res.statusText}
+      </p>
+    );
   }
-  const comments: Comment[] = await res.json();
+  // APIが { data: Comment[] } を返す場合に対応
+  const response = await res.json();
+  const comments: Comment[] = Array.isArray(response) ? response : response.data || [];
+
   return (
     <>
       {comments.length === 0 ? (
@@ -81,7 +87,7 @@ async function Comments({ id }: { id: string }) {
           {comments.map((comment) => (
             <li
               key={comment.id}
-              className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg shadow-sm"
+              className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
             >
               <p className="text-gray-700 dark:text-gray-200">{comment.content}</p>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -99,7 +105,7 @@ export default async function Post({ params }: { params: { id: string } }) {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-black text-gray-200 flex items-center justify-center">
+        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-200 flex items-center justify-center">
           <svg
             className="animate-spin h-10 w-10 text-gray-200"
             xmlns="http://www.w3.org/2000/svg"
@@ -123,31 +129,19 @@ export default async function Post({ params }: { params: { id: string } }) {
         </div>
       }
     >
-      <div className="container mx-auto p-6 min-h-screen" data-testid="container">
-        <Suspense
-          fallback={<div className="bg-black h-64 rounded-xl animate-pulse" />}
-        >
-          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-8 max-w-3xl mx-auto animate-fade-in">
+      <div className="container mx-auto p-6 min-h-screen bg-gray-100 dark:bg-gray-900" data-testid="container">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 max-w-3xl mx-auto animate-fade-in border border-gray-200 dark:border-gray-700">
+          <PostDetail id={params.id} />
+          <div className="mt-12">
+            <h2 className="text-2xl font-semibold text-primary dark:text-white mb-6">コメント</h2>
+            <Comments id={params.id} />
             <Suspense
-              fallback={<div className="bg-black h-64 rounded-xl animate-pulse" />}
+              fallback={<div className="bg-gray-200 dark:bg-gray-800 h-32 rounded-xl animate-pulse" />}
             >
-              <PostDetail id={params.id} />
+              <CommentForm postId={params.id} />
             </Suspense>
-            <div className="mt-12">
-              <h2 className="text-2xl font-semibold text-primary dark:text-white mb-6">コメント</h2>
-              <Suspense
-                fallback={<div className="bg-black h-32 rounded-xl animate-pulse" />}
-              >
-                <Comments id={params.id} />
-              </Suspense>
-              <Suspense
-                fallback={<div className="bg-black h-32 rounded-xl animate-pulse" />}
-              >
-                <CommentForm postId={params.id} />
-              </Suspense>
-            </div>
           </div>
-        </Suspense>
+        </div>
       </div>
     </Suspense>
   );

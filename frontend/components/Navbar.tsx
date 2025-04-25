@@ -1,18 +1,15 @@
-// frontend/components/Navbar.tsx（変更なし、参考）
 'use client';
+
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, Dispatch, SetStateAction } from 'react';
+import { useState } from 'react';
+import { useTheme } from 'next-themes';
 import { SunIcon, MoonIcon } from '@heroicons/react/24/solid';
 
-type NavbarProps = {
-  isDark: boolean;
-  setIsDark: Dispatch<SetStateAction<boolean>>;
-};
-
-const Navbar: React.FC<NavbarProps> = ({ isDark, setIsDark }) => {
+const Navbar: React.FC = () => {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   const navItems = [
     { name: 'Posts', href: '/posts' },
@@ -20,7 +17,10 @@ const Navbar: React.FC<NavbarProps> = ({ isDark, setIsDark }) => {
   ];
 
   return (
-    <nav className="bg-indigo-600 dark:bg-gray-900 text-white dark:text-gray-200 shadow-lg" data-testid="navbar">
+    <nav
+      className="bg-indigo-600 dark:bg-gray-900 text-white dark:text-gray-200 shadow-lg"
+      data-testid="navbar"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
@@ -43,11 +43,11 @@ const Navbar: React.FC<NavbarProps> = ({ isDark, setIsDark }) => {
               </Link>
             ))}
             <button
-              onClick={() => setIsDark(!isDark)}
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
               className="p-2 rounded-full bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-200"
               aria-label="Toggle theme"
             >
-              {isDark ? (
+              {theme === 'dark' ? (
                 <SunIcon className="w-5 h-5 text-yellow-400" data-testid="theme-icon" />
               ) : (
                 <MoonIcon className="w-5 h-5 text-gray-200" data-testid="theme-icon" />
@@ -95,11 +95,11 @@ const Navbar: React.FC<NavbarProps> = ({ isDark, setIsDark }) => {
             </Link>
           ))}
           <button
-            onClick={() => setIsDark(!isDark)}
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             className="w-full text-left px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-200"
             aria-label="Toggle theme"
           >
-            {isDark ? 'ライトモード' : 'ダークモード'}
+            {theme === 'dark' ? 'ライトモード' : 'ダークモード'}
           </button>
         </div>
       )}
