@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Middleware\HandleCors;
 use Illuminate\Session\Middleware\StartSession;
 
-Route::middleware([HandleCors::class, StartSession::class])->group(function () {
+Route::middleware([HandleCors::class])->group(function () {
     Route::get('/posts', [PostController::class, 'index']);
     Route::get('/posts/{id}', [PostController::class, 'show']);
     Route::post('/posts/{id}/like', [PostController::class, 'like']);

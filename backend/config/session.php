@@ -5,6 +5,9 @@ return [
     'connection' => env('SESSION_CONNECTION', 'mysql'),
     'table' => env('SESSION_TABLE', 'sessions'),
     'cookie' => env('SESSION_COOKIE', 'laravel_session'),
-    'same_site' => env('SESSION_SAME_SITE', 'lax'),
-    'secure' => env('SESSION_SECURE_COOKIE', false),
+    'same_site' => 'none', // クロスオリジン用
+    'secure' => false, // ローカルではfalse
+    'http_only' => true,
+    'lifetime' => 120,
+    'domain' => null,
 ];

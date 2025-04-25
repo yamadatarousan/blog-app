@@ -31,9 +31,11 @@ class PostController extends Controller
         ]);
     }
 
-    public function show($id)
+    public function show($id, Request $request)
     {
         $post = Post::findOrFail($id);
+        $sessionId = $request->header('X-Like-Session-Id');
+        \Log::debug('Show Session ID: ' . ($sessionId ?: 'None'));
         return response()->json([
             'id' => $post->id,
             'title' => $post->title,
@@ -41,14 +43,15 @@ class PostController extends Controller
             'category' => $post->category,
             'created_at' => $post->created_at,
             'likes' => $post->likes()->count(),
+            'liked' => $sessionId ? $post->likes()->where('session_id', $sessionId)->exists() : false,
         ]);
     }
 
     public function like(Request $request, $id)
     {
         $post = Post::findOrFail($id);
-        $sessionId = $request->session()->getId();
-        \Log::debug('Session ID: ' . ($sessionId ?: 'None')); // デバッグ
+        $sessionId = $request->header('X-Like-Session-Id');
+        \Log::debug('Session ID: ' . ($sessionId ?: 'None'));
         if (!$sessionId) {
             return response()->json(['error' => 'Session ID not found'], 400);
         }

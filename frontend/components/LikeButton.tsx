@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 
 type LikeButtonProps = {
   postId: number;
@@ -13,22 +14,44 @@ export default function LikeButton({ postId, initialLikes, initialLiked }: LikeB
   const [liked, setLiked] = useState(initialLiked);
   const [isLoading, setIsLoading] = useState(false);
 
+  // クッキー操作
+  const getCookie = (name: string) => {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    return parts.length === 2 ? parts.pop()?.split(';').shift() : null;
+  };
+  const setCookie = (name: string, value: string, days: number) => {
+    const expires = new Date(Date.now() + days * 864e5).toUTCString();
+    document.cookie = `${name}=${value}; expires=${expires}; path=/; SameSite=Lax`;
+  };
+
+  // セッションID取得/生成
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  useEffect(() => {
+    let id = getCookie('like_session_id');
+    if (!id) {
+      id = uuidv4();
+      setCookie('like_session_id', id, 30); // 30日有効
+    }
+    setSessionId(id);
+  }, []);
+
   const handleLike = async () => {
-    if (isLoading) return;
+    if (isLoading || !sessionId) return;
     setIsLoading(true);
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts/${postId}/like`, {
         method: 'POST',
-        credentials: 'include',
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
+          'X-Like-Session-Id': sessionId, // ヘッダーで送信
         },
       });
       if (res.ok) {
         const { likes: newLikes, liked: newLiked } = await res.json();
         setLikes(newLikes);
-        setLiked(newLiked); // サーバー状態を厳密に反映
+        setLiked(newLiked);
       } else {
         console.error(`Failed: ${res.status} ${res.statusText}`, await res.text());
       }
@@ -42,7 +65,7 @@ export default function LikeButton({ postId, initialLikes, initialLiked }: LikeB
   return (
     <button
       onClick={handleLike}
-      disabled={isLoading}
+      disabled={isLoading || !sessionId}
       className={`px-4 py-2 rounded-lg flex items-center gap-2 ${
         liked ? 'bg-red-500' : 'bg-gray-500'
       } text-white hover:opacity-90 transition-opacity ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
