@@ -45,7 +45,8 @@ class PostResource extends Resource
                 Forms\Components\TagsInput::make('tags')
                     ->label('Tags')
                     ->separator(',')
-                    ->dehydrated(true) // フォームデータ送信を有効化
+                    ->dehydrated(true)
+                    ->suggestions(Tag::pluck('name')->toArray() ?? [])
                     ->afterStateHydrated(function (Forms\Components\TagsInput $component, Post $record) {
                         $tags = $record->tags ?? collect([]);
                         $component->state($tags->pluck('name')->toArray());
@@ -69,7 +70,19 @@ class PostResource extends Resource
                     ->dateTime()
                     ->sortable(),
             ])
-            ->filters([])
+            ->filters([
+                Tables\Filters\SelectFilter::make('tags')
+                    ->multiple()
+                    ->options(Tag::pluck('name', 'name')->toArray() ?? [])
+                    ->query(function (Builder $query, array $data) {
+                        if (!empty($data['values'])) {
+                            $query->whereHas('tags', function (Builder $subQuery) use ($data) {
+                                $subQuery->whereIn('tags.name', $data['values']);
+                            });
+                        }
+                    })
+                    ->label('Filter by Tags'),
+            ])
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
