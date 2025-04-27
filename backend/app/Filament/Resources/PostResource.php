@@ -82,8 +82,10 @@ class PostResource extends Resource
                         Log::info('Tag filter options:', ['options' => $options]);
                         return $options ?: [];
                     })
+                    ->default(null) // 初期値として"All"（未選択）を設定
+                    ->placeholder('All') // ドロップダウンに"All"表示
                     ->query(function (Builder $query, array $data) {
-                        if (isset($data['value']) && $data['value'] !== null) {
+                        if (isset($data['value']) && $data['value'] !== null && $data['value'] !== '') {
                             Log::info('Tag filter applied:', [
                                 'value' => $data['value'],
                                 'posts_before' => $query->pluck('id')->toArray(),
@@ -94,6 +96,8 @@ class PostResource extends Resource
                             Log::info('Posts after filter:', [
                                 'posts_after' => $query->pluck('id')->toArray(),
                             ]);
+                        } else {
+                            Log::info('Tag filter skipped (All selected or no value)');
                         }
                     })
                     ->label('Filter by Tag'),
