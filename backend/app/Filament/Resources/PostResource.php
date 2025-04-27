@@ -83,11 +83,11 @@ class PostResource extends Resource
                         return $options ?: [];
                     })
                     ->query(function (Builder $query, array $data) {
-                        Log::info('Tag filter applied:', [
-                            'value' => $data['value'],
-                            'posts_before' => $query->pluck('id')->toArray(),
-                        ]);
-                        if (!empty($data['value'])) {
+                        if (isset($data['value']) && $data['value'] !== null) {
+                            Log::info('Tag filter applied:', [
+                                'value' => $data['value'],
+                                'posts_before' => $query->pluck('id')->toArray(),
+                            ]);
                             $query->whereHas('tags', function (Builder $subQuery) use ($data) {
                                 $subQuery->where('tags.id', $data['value']);
                             });
