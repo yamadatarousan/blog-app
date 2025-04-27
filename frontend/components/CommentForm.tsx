@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 type CommentFormProps = {
   postId: number;
@@ -10,6 +11,7 @@ export default function CommentForm({ postId }: CommentFormProps) {
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   console.log('CommentForm rendered with postId:', postId);
 
@@ -31,6 +33,7 @@ export default function CommentForm({ postId }: CommentFormProps) {
         throw new Error(`Failed to submit comment: ${errorData}`);
       }
       setContent('');
+      router.refresh(); // ページを再取得
     } catch (err: any) {
       setError(err.message || 'Failed to submit comment. Please try again.');
     } finally {

@@ -82,7 +82,9 @@ async function PostContent({ params }: { params: { id: string } }) {
         <p className="text-gray-700 dark:text-gray-200 mb-8">{post.content}</p>
         <LikeButton postId={post.id} initialLikes={post.likes} initialLiked={post.liked} />
         <h2 className="text-2xl font-semibold text-primary dark:text-white mt-12 mb-4">Comments</h2>
-        <CommentForm postId={post.id} />
+        <div className="mb-8">
+          <CommentForm postId={post.id} />
+        </div>
         {comments.length > 0 ? (
           <ul className="space-y-4 mt-6">
             {comments.map((comment) => (
