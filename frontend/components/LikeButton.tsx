@@ -13,6 +13,7 @@ export default function LikeButton({ postId, initialLikes, initialLiked }: LikeB
   const [likes, setLikes] = useState(initialLikes);
   const [liked, setLiked] = useState(initialLiked);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // クッキー操作
   const getCookie = (name: string) => {
@@ -39,52 +40,60 @@ export default function LikeButton({ postId, initialLikes, initialLiked }: LikeB
   const handleLike = async () => {
     if (isLoading || !sessionId) return;
     setIsLoading(true);
+    setError(null);
+
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts/${postId}/like`, {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      console.log('Sending like request for postId:', postId, 'to:', `${apiUrl}/api/posts/${postId}/like`);
+      const res = await fetch(`${apiUrl}/api/posts/${postId}/like`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
-          'X-Like-Session-Id': sessionId, // ヘッダーで送信
+          'X-Like-Session-Id': sessionId,
         },
       });
-      if (res.ok) {
-        const { likes: newLikes, liked: newLiked } = await res.json();
-        setLikes(newLikes);
-        setLiked(newLiked);
-      } else {
-        console.error(`Failed: ${res.status} ${res.statusText}`, await res.text());
+      if (!res.ok) {
+        const errorData = await res.text();
+        throw new Error(`Failed: ${res.status} ${errorData}`);
       }
-    } catch (error) {
-      console.error('Fetch error:', error);
+      const { likes: newLikes, liked: newLiked } = await res.json();
+      setLikes(newLikes);
+      setLiked(newLiked);
+    } catch (error: any) {
+      console.error('Like error:', error);
+      setError(error.message || 'Failed to like the post.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <button
-      onClick={handleLike}
-      disabled={isLoading || !sessionId}
-      className={`px-4 py-2 rounded-lg flex items-center gap-2 ${
-        liked ? 'bg-red-500' : 'bg-gray-500'
-      } text-white hover:opacity-90 transition-opacity ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-    >
-      <svg
-        className="w-5 h-5"
-        fill={liked ? 'currentColor' : 'none'}
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-        xmlns="http://www.w3.org/2000/svg"
+    <div className="flex items-center space-x-2 mb-8">
+      <button
+        onClick={handleLike}
+        disabled={isLoading || !sessionId}
+        className={`px-4 py-2 rounded-lg flex items-center gap-2 ${
+          liked ? 'bg-red-500' : 'bg-gray-500'
+        } text-white hover:opacity-90 transition-opacity ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-        />
-      </svg>
-      {liked ? 'Unlike' : 'Like'} ({likes})
-    </button>
+        <svg
+          className="w-5 h-5"
+          fill={liked ? 'currentColor' : 'none'}
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+          />
+        </svg>
+        {liked ? 'Unlike' : 'Like'} ({likes})
+      </button>
+      {error && <p className="text-red-500 dark:text-red-400">{error}</p>}
+    </div>
   );
 }

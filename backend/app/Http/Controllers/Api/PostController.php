@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Post;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class PostController extends Controller
@@ -73,7 +72,7 @@ class PostController extends Controller
                 'created_at' => $post->created_at,
                 'image' => $post->image,
                 'likes' => $post->likes()->count(),
-                'liked' => Auth::check() ? $post->likes()->where('user_id', Auth::id())->exists() : false,
+                'liked' => $post->likes()->where('session_id', request()->header('X-Like-Session-Id'))->exists(),
                 'tags' => $post->tags ? $post->tags->pluck('name')->toArray() : [],
             ];
             Log::info('PostController::show response', ['response' => $response]);
@@ -90,23 +89,26 @@ class PostController extends Controller
     public function like(Request $request, $id)
     {
         try {
-            Log::info('PostController::like called', ['id' => $id]);
+            Log::info('PostController::like called', [
+                'id' => $id,
+                'session_id' => $request->header('X-Like-Session-Id'),
+            ]);
             $post = Post::find($id);
             if (!$post) {
                 return response()->json(['message' => 'Post not found'], 404);
             }
 
-            $user = Auth::user();
-            if (!$user) {
-                return response()->json(['message' => 'Unauthenticated'], 401);
+            $sessionId = $request->header('X-Like-Session-Id');
+            if (!$sessionId) {
+                return response()->json(['message' => 'Session ID required'], 400);
             }
 
-            $like = $post->likes()->where('user_id', $user->id)->first();
+            $like = $post->likes()->where('session_id', $sessionId)->first();
             if ($like) {
                 $like->delete();
                 $liked = false;
             } else {
-                $post->likes()->create(['user_id' => $user->id]);
+                $post->likes()->create(['session_id' => $sessionId]);
                 $liked = true;
             }
 

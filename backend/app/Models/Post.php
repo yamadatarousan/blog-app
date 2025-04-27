@@ -9,27 +9,15 @@ class Post extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'title',
-        'content',
-        'image',
-        'category',
-        'created_at',
-        'updated_at',
-    ];
-    
-    public function comments()
+    protected $fillable = ['title', 'content', 'category', 'image'];
+
+    public function tags()
     {
-        return $this->hasMany(Comment::class);
+        return $this->belongsToMany(Tag::class, 'post_tag');
     }
 
     public function likes()
     {
         return $this->hasMany(Like::class);
-    }
-
-    public function tags()
-    {
-        return $this->belongsToMany(Tag::class, 'post_tag', 'post_id', 'tag_id');
     }
 }
