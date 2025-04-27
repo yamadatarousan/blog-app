@@ -80,10 +80,13 @@ class PostResource extends Resource
                     ->multiple()
                     ->options(Tag::pluck('name', 'name')->toArray() ?? [])
                     ->query(function (Builder $query, array $data) {
-                        Log::info('Tag filter applied:', ['values' => $data['values']]);
+                        Log::info('Tag filter query:', [
+                            'values' => $data['values'],
+                            'posts' => $query->pluck('id')->toArray(),
+                        ]);
                         if (!empty($data['values'])) {
                             $query->whereHas('tags', function (Builder $subQuery) use ($data) {
-                                $subQuery->whereIn('tags.name', array_map('trim', $data['values']));
+                                $subQuery->whereIn('tags.name', $data['values']);
                             });
                         }
                     })
