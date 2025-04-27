@@ -7,18 +7,63 @@ type Post = {
   content: string;
   category: string;
   created_at: string;
+  tags: string[];
 };
 
-async function PostsContent({ searchParams }: { searchParams: { page?: string; search?: string; category?: string } }) {
+async function PostsContent({ searchParams }: { searchParams: { page?: string; search?: string; category?: string; tag?: string } }) {
   const page = parseInt(searchParams.page || '1', 10);
   const search = searchParams.search || '';
   const category = searchParams.category || '';
+  const tag = searchParams.tag || '';
   const perPage = 6;
-  const res = await fetch(
-    `http://127.0.0.1/api/posts?page=${page}&per_page=${perPage}&search=${encodeURIComponent(search)}&category=${encodeURIComponent(category)}`,
-    { cache: 'no-store' }
-  );
-  const { data: posts, last_page: lastPage } = await res.json();
+
+  let tags: string[] = [];
+  let posts: Post[] = [];
+  let lastPage = 1;
+  let currentPage = 1;
+
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (!apiUrl) throw new Error('NEXT_PUBLIC_API_URL is not defined');
+    console.log('API URL:', apiUrl);
+    console.log('Fetching tags from:', `${apiUrl}/api/tags`);
+    const tagsRes = await fetch(`${apiUrl}/api/tags`, { cache: 'no-store' });
+    if (!tagsRes.ok) {
+      console.error('Tags fetch failed:', {
+        status: tagsRes.status,
+        statusText: tagsRes.statusText,
+        response: await tagsRes.text(),
+      });
+      throw new Error(`Failed to fetch tags: ${tagsRes.status}`);
+    }
+    tags = await tagsRes.json();
+
+    const postsUrl = `${apiUrl}/api/posts?page=${page}&per_page=${perPage}&search=${encodeURIComponent(search)}&category=${encodeURIComponent(category)}&tag=${encodeURIComponent(tag)}`;
+    console.log('Fetching posts from:', postsUrl);
+    const res = await fetch(postsUrl, { cache: 'no-store' });
+    if (!res.ok) {
+      console.error('Posts fetch failed:', {
+        status: res.status,
+        statusText: res.statusText,
+        response: await res.text(),
+      });
+      throw new Error(`Failed to fetch posts: ${res.status}`);
+    }
+    const data = await res.json();
+    posts = data.data;
+    lastPage = data.last_page;
+    currentPage = data.current_page;
+  } catch (error) {
+    console.error('Fetch error:', error);
+    return (
+      <div className="container mx-auto p-6 min-h-screen bg-gray-100 dark:bg-gray-900">
+        <h1 className="text-4xl font-bold text-primary dark:text-white mb-8 text-center">Blog Posts</h1>
+        <p className="text-red-500 dark:text-red-400 text-center">
+          Failed to load posts or tags. Please check if the server is running at the correct URL and try again.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-6 min-h-screen bg-gray-100 dark:bg-gray-900" data-testid="container">
@@ -41,6 +86,16 @@ async function PostsContent({ searchParams }: { searchParams: { page?: string; s
           <option value="Tech">Tech</option>
           <option value="Lifestyle">Lifestyle</option>
         </select>
+        <select
+          name="tag"
+          className="w-full max-w-xs p-3 border rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200"
+          defaultValue={tag}
+        >
+          <option value="">All Tags</option>
+          {tags.map((t: string) => (
+            <option key={t} value={t}>{t}</option>
+          ))}
+        </select>
         <button type="submit" className="px-4 py-2 bg-accent dark:bg-accent-dark text-white rounded-lg">
           Search
         </button>
@@ -54,14 +109,29 @@ async function PostsContent({ searchParams }: { searchParams: { page?: string; s
           >
             <h2 className="text-xl font-semibold text-primary dark:text-white">{post.title}</h2>
             <p className="text-gray-600 dark:text-gray-400">{post.category}</p>
+            <p className="text-gray-500 dark:text-gray-500">
+              <strong>Tags:</strong> {post.tags.join(', ') || 'None'}
+            </p>
           </Link>
         ))}
+      </div>
+      <div className="mt-8 flex justify-center gap-4">
+        {currentPage > 1 && (
+          <Link href={`/posts?page=${currentPage - 1}&search=${search}&category=${category}&tag=${tag}`} className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded">
+            Previous
+          </Link>
+        )}
+        {currentPage < lastPage && (
+          <Link href={`/posts?page=${currentPage + 1}&search=${search}&category=${category}&tag=${tag}`} className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded">
+            Next
+          </Link>
+        )}
       </div>
     </div>
   );
 }
 
-export default function Posts({ searchParams }: { searchParams: { page?: string; search?: string; category?: string } }) {
+export default function Posts({ searchParams }: { searchParams: { page?: string; search?: string; category?: string; tag?: string } }) {
   return (
     <Suspense
       fallback={

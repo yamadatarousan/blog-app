@@ -5,68 +5,123 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Post;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class PostController extends Controller
 {
     public function index(Request $request)
     {
-        $page = $request->query('page', 1);
-        $perPage = $request->query('per_page', 6);
-        $search = $request->query('search');
-        $category = $request->query('category');
+        try {
+            Log::info('PostController::index called', [
+                'request' => $request->all(),
+                'headers' => $request->headers->all(),
+            ]);
+            $perPage = $request->input('per_page', 6);
+            $search = $request->input('search', '');
+            $category = $request->input('category', '');
+            $tag = $request->input('tag', '');
 
-        $query = Post::query();
-        if ($search) {
-            $query->where('title', 'like', "%{$search}%")
-                  ->orWhere('content', 'like', "%{$search}%");
-        }
-        if ($category) {
-            $query->where('category', $category);
-        }
+            $query = Post::with('tags')
+                ->when($search, fn($q) => $q->where('title', 'like', "%{$search}%")
+                    ->orWhere('content', 'like', "%{$search}%"))
+                ->when($category, fn($q) => $q->where('category', $category))
+                ->when($tag, fn($q) => $q->whereHas('tags', fn($q2) => $q2->where('name', $tag)));
 
-        $posts = $query->paginate($perPage, ['*'], 'page', $page);
-        return response()->json([
-            'data' => $posts->items(),
-            'last_page' => $posts->lastPage(),
-        ]);
+            $posts = $query->paginate($perPage)->withQueryString();
+
+            $response = [
+                'data' => collect($posts->items())->map(fn($post) => [
+                    'id' => $post->id,
+                    'title' => $post->title,
+                    'content' => $post->content,
+                    'category' => $post->category,
+                    'created_at' => $post->created_at,
+                    'image' => $post->image,
+                    'tags' => $post->tags ? $post->tags->pluck('name')->toArray() : [],
+                ])->toArray(),
+                'last_page' => $posts->lastPage(),
+                'current_page' => $posts->currentPage(),
+                'total' => $posts->total(),
+            ];
+
+            Log::info('PostController::index response', ['response' => $response]);
+            return response()->json($response);
+        } catch (\Exception $e) {
+            Log::error('Error in PostController::index', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all(),
+            ]);
+            return response()->json(['error' => 'Server error'], 500);
+        }
     }
 
-    public function show($id, Request $request)
+    public function show($id)
     {
-        $post = Post::findOrFail($id);
-        $sessionId = $request->header('X-Like-Session-Id');
-        \Log::debug('Show Session ID: ' . ($sessionId ?: 'None'));
-        return response()->json([
-            'id' => $post->id,
-            'title' => $post->title,
-            'content' => $post->content,
-            'category' => $post->category,
-            'created_at' => $post->created_at,
-            'image' => $post->image,
-            'likes' => $post->likes()->count(),
-            'liked' => $sessionId ? $post->likes()->where('session_id', $sessionId)->exists() : false,
-        ]);
+        try {
+            Log::info('PostController::show called', ['id' => $id]);
+            $post = Post::with('tags')->find($id);
+            if (!$post) {
+                return response()->json(['message' => 'Post not found'], 404);
+            }
+            $response = [
+                'id' => $post->id,
+                'title' => $post->title,
+                'content' => $post->content,
+                'category' => $post->category,
+                'created_at' => $post->created_at,
+                'image' => $post->image,
+                'likes' => $post->likes()->count(),
+                'liked' => Auth::check() ? $post->likes()->where('user_id', Auth::id())->exists() : false,
+                'tags' => $post->tags ? $post->tags->pluck('name')->toArray() : [],
+            ];
+            Log::info('PostController::show response', ['response' => $response]);
+            return response()->json($response);
+        } catch (\Exception $e) {
+            Log::error('Error in PostController::show', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json(['error' => 'Server error'], 500);
+        }
     }
 
     public function like(Request $request, $id)
     {
-        $post = Post::findOrFail($id);
-        $sessionId = $request->header('X-Like-Session-Id');
-        \Log::debug('Session ID: ' . ($sessionId ?: 'None'));
-        if (!$sessionId) {
-            return response()->json(['error' => 'Session ID not found'], 400);
+        try {
+            Log::info('PostController::like called', ['id' => $id]);
+            $post = Post::find($id);
+            if (!$post) {
+                return response()->json(['message' => 'Post not found'], 404);
+            }
+
+            $user = Auth::user();
+            if (!$user) {
+                return response()->json(['message' => 'Unauthenticated'], 401);
+            }
+
+            $like = $post->likes()->where('user_id', $user->id)->first();
+            if ($like) {
+                $like->delete();
+                $liked = false;
+            } else {
+                $post->likes()->create(['user_id' => $user->id]);
+                $liked = true;
+            }
+
+            $response = [
+                'likes' => $post->likes()->count(),
+                'liked' => $liked,
+            ];
+            Log::info('PostController::like response', ['response' => $response]);
+            return response()->json($response);
+        } catch (\Exception $e) {
+            Log::error('Error in PostController::like', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json(['error' => 'Server error'], 500);
         }
-        $like = $post->likes()->where('session_id', $sessionId)->first();
-        if ($like) {
-            $like->delete();
-            $liked = false;
-        } else {
-            $post->likes()->create(['session_id' => $sessionId]);
-            $liked = true;
-        }
-        return response()->json([
-            'likes' => $post->likes()->count(),
-            'liked' => $liked,
-        ]);
     }
 }
