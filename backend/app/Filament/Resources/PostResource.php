@@ -78,16 +78,23 @@ class PostResource extends Resource
             ->filters([
                 Tables\Filters\SelectFilter::make('tags')
                     ->multiple()
-                    ->options(Tag::pluck('name', 'name')->toArray() ?? [])
+                    ->options(function () {
+                        $options = Tag::pluck('name', 'name')->toArray();
+                        Log::info('Tag filter options:', ['options' => $options]);
+                        return $options ?: [];
+                    })
                     ->query(function (Builder $query, array $data) {
-                        Log::info('Tag filter query:', [
+                        Log::info('Tag filter applied:', [
                             'values' => $data['values'],
-                            'posts' => $query->pluck('id')->toArray(),
+                            'posts_before' => $query->pluck('id')->toArray(),
                         ]);
                         if (!empty($data['values'])) {
                             $query->whereHas('tags', function (Builder $subQuery) use ($data) {
                                 $subQuery->whereIn('tags.name', $data['values']);
                             });
+                            Log::info('Posts after filter:', [
+                                'posts_after' => $query->pluck('id')->toArray(),
+                            ]);
                         }
                     })
                     ->label('Filter by Tags'),
