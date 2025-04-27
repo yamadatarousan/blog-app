@@ -11,6 +11,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Log;
 
 class PostResource extends Resource
 {
@@ -47,8 +48,12 @@ class PostResource extends Resource
                     ->separator(',')
                     ->dehydrated(true)
                     ->suggestions(Tag::pluck('name')->toArray() ?? [])
-                    ->afterStateHydrated(function (Forms\Components\TagsInput $component, Post $record) {
-                        $tags = $record->tags ?? collect([]);
+                    ->reactive()
+                    ->afterStateUpdated(function ($state, callable $set) {
+                        $set('tags', array_map('trim', $state));
+                    })
+                    ->afterStateHydrated(function (Forms\Components\TagsInput $component, ?Post $record) {
+                        $tags = $record ? ($record->tags ?? collect([])) : collect([]);
                         $component->state($tags->pluck('name')->toArray());
                     }),
             ]);
@@ -75,9 +80,10 @@ class PostResource extends Resource
                     ->multiple()
                     ->options(Tag::pluck('name', 'name')->toArray() ?? [])
                     ->query(function (Builder $query, array $data) {
+                        Log::info('Tag filter applied:', ['values' => $data['values']]);
                         if (!empty($data['values'])) {
                             $query->whereHas('tags', function (Builder $subQuery) use ($data) {
-                                $subQuery->whereIn('tags.name', $data['values']);
+                                $subQuery->whereIn('tags.name', array_map('trim', $data['values']));
                             });
                         }
                     })

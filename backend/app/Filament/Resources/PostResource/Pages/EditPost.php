@@ -12,16 +12,19 @@ class EditPost extends EditRecord
 
     protected function handleRecordUpdate(\Illuminate\Database\Eloquent\Model $record, array $data): \Illuminate\Database\Eloquent\Model
     {
-        Log::info('EditPost data:', $data); // デバッグログ
+        Log::info('EditPost data:', ['data' => $data]);
         $tags = $data['tags'] ?? [];
         unset($data['tags']);
 
         $record->update($data);
 
         $tagIds = collect($tags)->map(function ($tagName) {
-            return \App\Models\Tag::firstOrCreate(['name' => trim($tagName)])->id;
-        })->toArray();
+            $trimmed = trim($tagName);
+            Log::info('Processing tag:', ['tag' => $trimmed]);
+            return \App\Models\Tag::firstOrCreate(['name' => $trimmed])->id;
+        })->filter()->toArray();
         $record->tags()->sync($tagIds);
+        Log::info('Tags synced:', ['post_id' => $record->id, 'tag_ids' => $tagIds]);
 
         return $record;
     }

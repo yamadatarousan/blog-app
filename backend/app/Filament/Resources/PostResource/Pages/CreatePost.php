@@ -12,7 +12,7 @@ class CreatePost extends CreateRecord
 
     protected function handleRecordCreation(array $data): \Illuminate\Database\Eloquent\Model
     {
-        Log::info('CreatePost data:', $data); // デバッグログ
+        Log::info('CreatePost data:', ['data' => $data]);
         $tags = $data['tags'] ?? [];
         unset($data['tags']);
 
@@ -20,9 +20,12 @@ class CreatePost extends CreateRecord
 
         if (!empty($tags)) {
             $tagIds = collect($tags)->map(function ($tagName) {
-                return \App\Models\Tag::firstOrCreate(['name' => trim($tagName)])->id;
-            })->toArray();
+                $trimmed = trim($tagName);
+                Log::info('Processing tag:', ['tag' => $trimmed]);
+                return \App\Models\Tag::firstOrCreate(['name' => $trimmed])->id;
+            })->filter()->toArray();
             $post->tags()->sync($tagIds);
+            Log::info('Tags synced:', ['post_id' => $post->id, 'tag_ids' => $tagIds]);
         }
 
         return $post;
