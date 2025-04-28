@@ -8,8 +8,8 @@ A full-stack blog with real-time comments and likes.
 - Light/Dark themes
 
 ## Tech Stack
-- Frontend: Next.js 14, TypeScript, Tailwind CSS
-- Backend: Laravel 10, MySQL
+- Frontend: Next.js 15, TypeScript, Tailwind CSS
+- Backend: Laravel 12, Filament, MySQL
 - DevOps: Docker, Nginx
 
 ## Setup
