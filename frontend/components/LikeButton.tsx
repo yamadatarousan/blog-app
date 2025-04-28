@@ -1,3 +1,4 @@
+// components/LikeButton.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -39,6 +40,10 @@ export default function LikeButton({ postId, initialLikes, initialLiked }: LikeB
 
   const handleLike = async () => {
     if (isLoading || !sessionId) return;
+    const previousLikes = likes;
+    const previousLiked = liked;
+    setLikes(likes + 1);
+    setLiked(true);
     setIsLoading(true);
     setError(null);
 
@@ -54,15 +59,54 @@ export default function LikeButton({ postId, initialLikes, initialLiked }: LikeB
         },
       });
       if (!res.ok) {
-        const errorData = await res.text();
-        throw new Error(`Failed: ${res.status} ${errorData}`);
+        const errorData = await res.json();
+        throw new Error(`Failed to like: ${res.status} ${errorData.message || 'Unknown error'}`);
       }
       const { likes: newLikes, liked: newLiked } = await res.json();
       setLikes(newLikes);
       setLiked(newLiked);
     } catch (error: any) {
       console.error('Like error:', error);
+      setLikes(previousLikes);
+      setLiked(previousLiked);
       setError(error.message || 'Failed to like the post.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleUnlike = async () => {
+    if (isLoading || !sessionId) return;
+    const previousLikes = likes;
+    const previousLiked = liked;
+    setLikes(likes - 1);
+    setLiked(false);
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      console.log('Sending unlike request for postId:', postId, 'to:', `${apiUrl}/api/posts/${postId}/like`);
+      const res = await fetch(`${apiUrl}/api/posts/${postId}/like`, {
+        method: 'DELETE',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'X-Like-Session-Id': sessionId,
+        },
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(`Failed to unlike: ${res.status} ${errorData.message || 'Unknown error'}`);
+      }
+      const { likes: newLikes, liked: newLiked } = await res.json();
+      setLikes(newLikes);
+      setLiked(newLiked);
+    } catch (error: any) {
+      console.error('Unlike error:', error);
+      setLikes(previousLikes);
+      setLiked(previousLiked);
+      setError(error.message || 'Failed to unlike the post.');
     } finally {
       setIsLoading(false);
     }
@@ -71,7 +115,7 @@ export default function LikeButton({ postId, initialLikes, initialLiked }: LikeB
   return (
     <div className="flex items-center space-x-2 mb-8">
       <button
-        onClick={handleLike}
+        onClick={liked ? handleUnlike : handleLike}
         disabled={isLoading || !sessionId}
         className={`px-4 py-2 rounded-lg flex items-center gap-2 ${
           liked ? 'bg-red-500' : 'bg-gray-500'
