@@ -1,32 +1,26 @@
-FROM php:8.3-fpm
+# backend/Dockerfile
+FROM php:8.2-fpm
 
-# Composerをインストール
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+WORKDIR /var/www
 
 # 必要なパッケージとPHP拡張をインストール
 RUN apt-get update && apt-get install -y \
-    libicu-dev \
-    libzip-dev \
-    libpq-dev \
-    vim \
-    default-mysql-client \
-    && docker-php-ext-install pdo_mysql intl zip \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    libpng-dev libjpeg-dev libfreetype6-dev \
+    vim zip unzip git \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install gd pdo pdo_mysql
 
-# Laravelの依存をインストール
-COPY composer.json composer.lock ./
-RUN composer install --no-scripts --no-autoloader
+# Composerインストール
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# アプリケーションコードをコピー
-COPY . .
+# アプリケーションファイルをコピー
+COPY ./backend .
 
-# Composerオートロード生成
-RUN composer dump-autoload --optimize
+# 依存関係インストール
+RUN composer install --optimize-autoloader --no-dev
 
 # 権限設定
-RUN chown -R www-data:www-data storage bootstrap/cache
-RUN chmod -R 775 storage bootstrap/cache
+RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
-# PHP-FPM設定
-COPY docker/php.ini /usr/local/etc/php/php.ini
+# PHP-FPM起動
+CMD ["php-fpm"]
