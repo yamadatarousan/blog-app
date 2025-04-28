@@ -1,3 +1,25 @@
+## Blog App
+A full-stack blog with real-time comments and likes.
+
+## Features
+- Tag-based post filtering
+- Real-time comments
+- Session-based likes (no login)
+- Light/Dark themes
+
+## Tech Stack
+- Frontend: Next.js 14, TypeScript, Tailwind CSS
+- Backend: Laravel 10, MySQL
+- DevOps: Docker, Nginx
+
+## Setup
+1. Clone: `git clone https://github.com/yamadatarousan/blog-app`
+2. Run: `docker-compose up -d`
+3. Backend: `docker-compose exec laravel composer install`
+4. Frontend: `cd frontend && npm install`
+5. Migrate: `docker-compose exec laravel php artisan migrate`
+6. Access: `http://localhost:3000`
+
 # blog-app
 - 自分個人用のブログシステムを想定して開発
 
