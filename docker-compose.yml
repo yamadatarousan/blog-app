@@ -44,13 +44,14 @@ services:
       timeout: 5s
     networks:
       - blog-network
-  frontend:  # Next.jsビルド用
+  frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    ports:
+      - "80:80"
     volumes:
-      - ./frontend/out:/app/out
-    command: ["npm", "run", "build"]  # ビルドのみ
+      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf
     networks:
       - blog-network
 volumes:
