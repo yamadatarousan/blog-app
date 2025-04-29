@@ -1,4 +1,3 @@
-// components/LikeButton.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -16,7 +15,6 @@ export default function LikeButton({ postId, initialLikes, initialLiked }: LikeB
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // クッキー操作
   const getCookie = (name: string) => {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
@@ -27,13 +25,12 @@ export default function LikeButton({ postId, initialLikes, initialLiked }: LikeB
     document.cookie = `${name}=${value}; expires=${expires}; path=/; SameSite=Lax`;
   };
 
-  // セッションID取得/生成
   const [sessionId, setSessionId] = useState<string | null>(null);
   useEffect(() => {
     let id = getCookie('like_session_id');
     if (!id) {
       id = uuidv4();
-      setCookie('like_session_id', id, 30); // 30日有効
+      setCookie('like_session_id', id, 30);
     }
     setSessionId(id);
   }, []);
@@ -65,7 +62,7 @@ export default function LikeButton({ postId, initialLikes, initialLiked }: LikeB
       const { likes: newLikes, liked: newLiked } = await res.json();
       setLikes(newLikes);
       setLiked(newLiked);
-    } catch (error: any) {
+    } catch (error: Error) {
       console.error('Like error:', error);
       setLikes(previousLikes);
       setLiked(previousLiked);
@@ -102,7 +99,7 @@ export default function LikeButton({ postId, initialLikes, initialLiked }: LikeB
       const { likes: newLikes, liked: newLiked } = await res.json();
       setLikes(newLikes);
       setLiked(newLiked);
-    } catch (error: any) {
+    } catch (error: Error) {
       console.error('Unlike error:', error);
       setLikes(previousLikes);
       setLiked(previousLiked);

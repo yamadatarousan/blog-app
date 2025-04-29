@@ -33,8 +33,8 @@ export default function CommentForm({ postId }: CommentFormProps) {
         throw new Error(`Failed to submit comment: ${errorData}`);
       }
       setContent('');
-      router.refresh(); // ページを再取得
-    } catch (err: any) {
+      router.refresh();
+    } catch (err: Error) {
       setError(err.message || 'Failed to submit comment. Please try again.');
     } finally {
       setIsSubmitting(false);
