@@ -4,7 +4,7 @@ COPY package*.json ./
 RUN npm install
 COPY . .
 ENV NODE_OPTIONS=--max-old-space-size=256
-RUN npm run build && ls -la out/ || echo "Build failed, no out/"
+RUN npm run build && ls -la out/ || exit 1
 
 FROM nginx:alpine
 COPY --from=builder /app/out /usr/share/nginx/html
