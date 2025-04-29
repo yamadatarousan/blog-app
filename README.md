@@ -72,24 +72,28 @@ mysql -u root -p -h mysql -P 3306
 ### aws
 ```
 sudo ssh -i "aws-app.pem" ubuntu@ec2-43-207-111-116.ap-northeast-1.compute.amazonaws.com
-sudo apt update
-sudo apt install vim
-curl -fsSL https://get.docker.com -o get-docker.sh
-sudo sh get-docker.s
-sudo apt install git
+sudo su -
+apt update
+apt install vim
+curl -fsSL https://get.docker.com -o get-docker.sh　
+#####ここでdockerのバージョンが古くなってしまった
+sh get-docker.sh
 apt install docker-compose
-docker-compose exec laravel bash
+apt install git
+git clone https://github.com/yamadatarousan/blog-app.git
+git branch aws-ubuntu
+#####migrateの前に設定
 touch .env
-vi .env(migrateの前に編集)
+vi .env
+docker-compose up -d
+docker-compose exec laravel bash
 php artisan migrate
+#####DBの中身を確認 
+mysql -u root -p -h mysql -P 3306
 chown -R www-data:www-data /var/www/storage
 chown -R www-data:www-data /var/www/bootstrap/cache
 chmod -R 775 /var/www/storage
 chmod -R 775 /var/www/bootstrap/cache
-php artisan cache:clear
-php artisan view:clear
-ec2-43-207-111-116.ap-northeast-1.compute.amazonaws.com:admin/login
-ec2-43-207-111-116.ap-northeast-1.compute.amazonaws.com:3000
 docker-compose exec laravel bash
 php artisan tinker
 use App\Models\User;
