@@ -1,3 +1,4 @@
+// app/posts/[id]/page.tsx
 import Link from 'next/link';
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
@@ -22,13 +23,14 @@ type Comment = {
   created_at: string;
 };
 
-async function PostContent({ params }: { params: { id: string } }) {
+async function PostContent({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params; // Promiseを解決
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     if (!apiUrl) throw new Error('NEXT_PUBLIC_API_URL is not defined');
     console.log('API URL:', apiUrl);
-    console.log('Fetching post from:', `${apiUrl}/api/posts/${params.id}`);
-    const res = await fetch(`${apiUrl}/api/posts/${params.id}`, {
+    console.log('Fetching post from:', `${apiUrl}/api/posts/${id}`);
+    const res = await fetch(`${apiUrl}/api/posts/${id}`, {
       cache: 'no-store',
     });
     if (!res.ok) {
@@ -41,8 +43,8 @@ async function PostContent({ params }: { params: { id: string } }) {
     }
     const post: Post = await res.json();
 
-    console.log('Fetching comments from:', `${apiUrl}/api/posts/${params.id}/comments`);
-    const commentsRes = await fetch(`${apiUrl}/api/posts/${params.id}/comments`, {
+    console.log('Fetching comments from:', `${apiUrl}/api/posts/${id}/comments`);
+    const commentsRes = await fetch(`${apiUrl}/api/posts/${id}/comments`, {
       cache: 'no-store',
     });
     if (!commentsRes.ok) {
@@ -100,7 +102,7 @@ async function PostContent({ params }: { params: { id: string } }) {
             ))}
           </ul>
         ) : (
-          <p className="text-gray-600 dark:text-gray-400 mt-4">No comments yet.</p>
+          <p className="text-gray-600 dark:text-gray-400 mt-4"> togNo comments yet.</p>
         )}
       </div>
     );
@@ -119,7 +121,7 @@ async function PostContent({ params }: { params: { id: string } }) {
   }
 }
 
-export default function Post({ params }: { params: { id: string } }) {
+export default async function Post({ params }: { params: Promise<{ id: string }> }) {
   return (
     <Suspense
       fallback={

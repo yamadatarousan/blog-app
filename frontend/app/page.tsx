@@ -1,103 +1,159 @@
-import Image from "next/image";
+// app/posts/[id]/page.tsx
+import Link from 'next/link';
+import Image from 'next/image';
+import { Suspense } from 'react';
+import { notFound } from 'next/navigation';
+import LikeButton from '@/components/LikeButton';
+import CommentForm from '@/components/CommentForm';
 
-export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+type Post = {
+  id: number;
+  title: string;
+  content: string;
+  category: string;
+  created_at: string;
+  likes: number;
+  liked: boolean;
+  image?: string;
+  tags: string[];
+};
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+type Comment = {
+  id: number;
+  content: string;
+  created_at: string;
+};
+
+async function PostContent({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (!apiUrl) throw new Error('NEXT_PUBLIC_API_URL is not defined');
+    console.log('API URL:', apiUrl);
+    console.log('Fetching post from:', `${apiUrl}/api/posts/${id}`);
+    const res = await fetch(`${apiUrl}/api/posts/${id}`, {
+      cache: 'no-store',
+    });
+    if (!res.ok) {
+      console.error('Post fetch failed:', {
+        status: res.status,
+        statusText: res.statusText,
+        response: await res.text(),
+      });
+      notFound();
+    }
+    const post: Post = await res.json();
+
+    console.log('Fetching comments from:', `${apiUrl}/api/posts/${id}/comments`);
+    const commentsRes = await fetch(`${apiUrl}/api/posts/${id}/comments`, {
+      cache: 'no-store',
+    });
+    if (!commentsRes.ok) {
+      console.error('Comments fetch failed:', {
+        status: commentsRes.status,
+        statusText: commentsRes.statusText,
+        response: await commentsRes.text(),
+      });
+      throw new Error(`Failed to fetch comments: ${commentsRes.status}`);
+    }
+    const comments: Comment[] = await commentsRes.json();
+
+    return (
+      <div className="container mx-auto p-6 min-h-screen bg-gray-100 dark:bg-gray-900" data-testid="container">
+        <Link
+          href="/posts"
+          className="inline-block mb-4 text-primary dark:text-accent-dark hover:underline"
+        >
+          ← Back to Posts
+        </Link>
+        <h1 className="text-4xl font-bold text-primary dark:text-white mb-4">{post.title}</h1>
+        <p className="text-gray-600 dark:text-gray-400 mb-4">
+          {post.category} | {new Date(post.created_at).toLocaleDateString()}
+        </p>
+        <p className="text-gray-600 dark:text-gray-400 mb-4">
+          <strong>Tags:</strong> {post.tags && post.tags.length > 0 ? post.tags.join(', ') : 'None'}
+        </p>
+        {post.image ? (
+          <Image
+            src={post.image}
+            alt={post.title}
+            width={672}
+            height={400}
+            className="mx-auto mb-8 rounded-lg shadow-md object-cover"
+          />
+        ) : (
+          <p className="text-gray-600 dark:text-gray-400 mb-8">No image available</p>
+        )}
+        <p className="text-gray-700 dark:text-gray-200 mb-8">{post.content}</p>
+        <LikeButton postId={post.id} initialLikes={post.likes} initialLiked={post.liked} />
+        <h2 className="text-2xl font-semibold text-primary dark:text-white mt-12 mb-4">Comments</h2>
+        <div className="mb-8">
+          <CommentForm postId={post.id} />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+        {comments.length > 0 ? (
+          <ul className="space-y-4 mt-6">
+            {comments.map((comment) => (
+              <li
+                key={comment.id}
+                className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md"
+              >
+                <p className="text-gray-700 dark:text-gray-200">{comment.content}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                  {new Date(comment.created_at).toLocaleDateString()}
+                </p>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-gray-600 dark:text-gray-400 mt-4">No comments yet.</p>
+        )}
+      </div>
+    );
+  } catch (error) {
+    console.error('Fetch error:', error);
+    return (
+      <div className="container mx-auto p-6 min-h-screen bg-gray-100 dark:bg-gray-900">
+        <Link href="/posts" className="inline-block mb-4 text-primary dark:text-accent-dark hover:underline">
+          ← Back to Posts
+        </Link>
+        <p className="text-red-500 dark:text-red-400 text-center">
+          Failed to load post or comments. Please check if the server is running at the correct URL and try again.
+        </p>
+      </div>
+    );
+  }
+}
+
+export default async function Post({ params }: { params: Promise<{ id: string }> }) {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
+          <svg
+            className="animate-spin h-10 w-10 text-gray-200"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 24 24"
+            role="status"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            />
+          </svg>
+        </div>
+      }
+    >
+      <PostContent params={params} />
+    </Suspense>
   );
 }
