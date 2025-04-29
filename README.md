@@ -68,3 +68,14 @@ docker-compose up -d
 docker-compose exec laravel bash
 mysql -u root -p -h mysql -P 3306
 ```
+
+### aws
+```
+ssh -i "blog-app.pem" ubuntu@ec2-54-249-4-222.ap-northeast-1.compute.amazonaws.com
+sudo apt update
+sudo apt install vim
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.s
+sudo apt install git
+git config --global --add safe.directory /blog-app
+```
