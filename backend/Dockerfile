@@ -1,5 +1,7 @@
 FROM php:8.3-fpm
 
+WORKDIR /var/www  # 追加
+
 # Composerをインストール
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
