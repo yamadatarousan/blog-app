@@ -71,11 +71,34 @@ mysql -u root -p -h mysql -P 3306
 
 ### aws
 ```
-ssh -i "blog-app.pem" ubuntu@ec2-54-249-4-222.ap-northeast-1.compute.amazonaws.com
+sudo ssh -i "aws-app.pem" ubuntu@ec2-43-207-111-116.ap-northeast-1.compute.amazonaws.com
 sudo apt update
 sudo apt install vim
 curl -fsSL https://get.docker.com -o get-docker.sh
 sudo sh get-docker.s
 sudo apt install git
-git config --global --add safe.directory /blog-app
+apt install docker-compose
+docker-compose exec laravel bash
+touch .env
+vi .env(migrateの前に編集)
+php artisan migrate
+chown -R www-data:www-data /var/www/storage
+chown -R www-data:www-data /var/www/bootstrap/cache
+chmod -R 775 /var/www/storage
+chmod -R 775 /var/www/bootstrap/cache
+php artisan cache:clear
+php artisan view:clear
+ec2-43-207-111-116.ap-northeast-1.compute.amazonaws.com:admin/login
+ec2-43-207-111-116.ap-northeast-1.compute.amazonaws.com:3000
+docker-compose exec laravel bash
+php artisan tinker
+use App\Models\User;
+$user = new User();
+$user->name = 'Admin';
+$user->email = 'admin@example.com';
+$user->password = bcrypt('password');
+$user->save();
 ```
+
+this page has expired.
+would you like to refresh the page?
