@@ -17,6 +17,8 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use App\Filament\Resources\PostResource;
+use App\Filament\Resources\CommentResource;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -53,6 +55,10 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class, // カスタムミドルウェアを削除し標準に戻す
+            ])
+            ->resources([
+                CommentResource::class,
+                PostResource::class,
             ]);
     }
 }
