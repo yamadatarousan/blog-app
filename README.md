@@ -107,4 +107,4 @@ $user->save();
 this page has expired.
 would you like to refresh the page?
 
-test
+EC2にデプロイした際に管理画面で「this page has expired. would you like to refresh the page?」になってしまうことの回避策を先にローカルで実装したい。
