@@ -107,10 +107,17 @@ $user->save();
 exit
 ```
 
+
+
+EC2
+スペック: 3medium
+セキュリティグループ: 22,80,3000,443ポート開放
+ストレージ: 50G
+
+発生した問題
 this page has expired.
 would you like to refresh the page?
-
-EC2にデプロイした際に管理画面で「this page has expired. would you like to refresh the page?」になってしまうことの回避策を先にローカルで実装したい。
+※解決済み
 
 aws
 ```
