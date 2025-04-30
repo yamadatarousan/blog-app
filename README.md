@@ -87,6 +87,8 @@ touch .env
 vi .env
 docker-compose up -d
 docker-compose exec laravel bash
+cd /var/www
+composer install
 php artisan migrate
 #####DBの中身を確認 
 mysql -u root -p -h mysql -P 3306
@@ -102,9 +104,84 @@ $user->name = 'Admin';
 $user->email = 'admin@example.com';
 $user->password = bcrypt('password');
 $user->save();
+exit
 ```
 
 this page has expired.
 would you like to refresh the page?
 
 EC2にデプロイした際に管理画面で「this page has expired. would you like to refresh the page?」になってしまうことの回避策を先にローカルで実装したい。
+
+aws
+```
+sudo ssh -i "aws-app.pem" ubuntu@57.180.60.58
+sudo su -
+apt update
+apt install vim
+apt install git
+apt install npm
+apt install ca-certificates curl gnupg lsb-release
+mkdir -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+chmod a+r /etc/apt/keyrings/docker.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+apt update
+apt install docker-ce docker-ce-cli containerd.io
+apt install docker-compose
+cd /
+git clone https://github.com/yamadatarousan/blog-app.git
+cd blog-app/frontend
+npm install
+cd ../
+curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+chmod +x /usr/local/bin/docker-compose
+docker-compose -v
+cd backend/
+touch .env
+vi .env
+docker-compose exec laravel bash
+composer install
+php artisan migrate
+mysql -u root -p -h mysql -P 3306
+php artisan tinker
+use App\Models\User;
+$user = new User();
+$user->name = 'Admin';
+$user->email = 'admin@example.com';
+$user->password = bcrypt('password');
+$user->save();
+exit
+chown -R www-data:www-data /var/www/storage
+chown -R www-data:www-data /var/www/bootstrap/cache
+chmod -R 775 /var/www/storage
+chmod -R 775 /var/www/bootstrap/cache
+vi .env
+APP_URL=http://57.180.60.58
+SESSION_DRIVER=database
+SESSION_CONNECTION=mysql
+SESSION_DOMAIN=57.180.60.58
+SESSION_SECURE_COOKIE=false
+docker-compose exec laravel
+php artisan config:clear
+php artisan optimize:clear
+rm -rf /var/www/storage/framework/sessions/*
+exit
+chown -R www-data:www-data /blog-app/backend/storage
+chmod -R 775 /blog-app/backend/storage
+cd /blog-app/frontend
+touch .env.local
+NEXT_PUBLIC_API_URL=http://57.180.60.58
+/blog-app/backend/config/cors.php
+<?php
+
+return [
+    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'allowed_methods' => ['*'],
+    'allowed_origins' => ['http://localhost:3000', 'http://57.180.60.58:3000'],
+    'allowed_origins_patterns' => [],
+    'allowed_headers' => ['*'],
+    'exposed_headers' => [],
+    'max_age' => 0,
+    'supports_credentials' => true,
+];
+```
